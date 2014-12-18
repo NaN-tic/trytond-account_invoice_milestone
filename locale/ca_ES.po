@@ -1,0 +1,956 @@
+# 
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "error:account.invoice-account.invoice.milestone:"
+msgid "The Invoice must be unique."
+msgstr "La factura ha de ser única."
+
+msgctxt "error:account.invoice-account.invoice.milestone:"
+msgid "The Milestone must be unique."
+msgstr "La fita ha de ser única."
+
+msgctxt "error:account.invoice.milestone.group.type:"
+msgid "Invalid line \"%(line)s\" in payment term \"%(term)s\"."
+msgstr "La línia \"%(line)s\" del termini de pagament \"%(term)s\" no és correcte."
+
+msgctxt "error:account.invoice.milestone.group.type:"
+msgid "Last line of payment term \"%s\" must be of type remainder."
+msgstr ""
+"L'última línia del termini de pagament \"%s\" ha de ser de tipus romanent."
+
+msgctxt "error:account.invoice.milestone.group.type:"
+msgid "Missing remainder line in payment term \"%s\"."
+msgstr "Falta el remanent de la línia del termini de pagament \"%s\"."
+
+msgctxt "error:account.invoice.milestone.group:"
+msgid ""
+"An advancement product must be defined in order to generate advancement "
+"invoices.Please define one in account configuration."
+msgstr ""
+"S'ha de definir un producte d'avançament per a generar factures "
+"d'avançament. Sisplau, definiu-n'hi un a la configuració financera."
+
+msgctxt "error:account.invoice.milestone.group:"
+msgid ""
+"Can not delete milestone group \"%s\" because it's milestone \"%s\" is not "
+"in draft or cancel state."
+msgstr ""
+"No es pot eliminar el grup de fites \"%S\" perquè conté la fita \"%s\" que "
+"no està en estat esborrany o cancel·lat."
+
+msgctxt "error:account.invoice.milestone.group:"
+msgid ""
+"There is no milestone sequencedefined. Please define one in account "
+"configuration"
+msgstr ""
+"No hi ha cap seqüencia de fites definida. Si us plau, definiu-n'hi una a la "
+"configuració comptable."
+
+msgctxt "error:account.invoice.milestone.type:"
+msgid "Day of month must be between 1 and 31."
+msgstr "El dia del mes ha d'estar entre 1 i 31."
+
+msgctxt "error:account.invoice.milestone.type:"
+msgid ""
+"Percentage and Divisor values are not consistent in line \"%(line)s\" of "
+"payment term \"%(milestone)s\"."
+msgstr ""
+"Els valors del percentatge i el division no son consistents a la línia "
+"\"%(line)s\" del grup de tipus de fites \"%(milestone)s\"."
+
+msgctxt "error:account.invoice.milestone:"
+msgid ""
+"Milestone \"%(milestone)s\" can not be invoiced because its move \"%(move)s "
+"is not done."
+msgstr ""
+"La fita \"%(milestone)s\" no es pot facturar perquè el seu movimient "
+"\"%(move)s\" no està realitzat."
+
+msgctxt "error:account.invoice.milestone:"
+msgid ""
+"There is no milestone sequencedefined. Please define one in account "
+"configuration"
+msgstr ""
+"No hi ha cap seqüencia de fites definida. Si us plau, definiu-n'hi una a la "
+"configuració comptable."
+
+msgctxt "error:account.invoice:"
+msgid ""
+"Amount of invoice \"%(invoice)s\" must be equal than its milestone "
+"\"%(milestone)s\" amount"
+msgstr ""
+"El import de la factura \"%(invoice)s\" ha de ser igual a l'import de la "
+"seva fita \"%(milestone)s\"."
+
+msgctxt "field:account.configuration,milestone_advancement_product:"
+msgid "Milestone Advancement Product"
+msgstr "Producte dels avançaments de fites"
+
+msgctxt "field:account.configuration,milestone_group_sequence:"
+msgid "Milestone Group Sequence"
+msgstr "Seqüencia de grup de fites"
+
+msgctxt "field:account.configuration,milestone_sequence:"
+msgid "Milestone Sequence"
+msgstr "Seqüencia de fites"
+
+msgctxt "field:account.configuration.company,company:"
+msgid "Company"
+msgstr "Empresa"
+
+msgctxt "field:account.configuration.company,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.configuration.company,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.configuration.company,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.configuration.company,milestone_advancement_product:"
+msgid "Milestone Advancement Product"
+msgstr "Producte dels avançaments de fites"
+
+msgctxt "field:account.configuration.company,milestone_group_sequence:"
+msgid "Milestone Group Sequence"
+msgstr "Seqüencia de grup de fites"
+
+msgctxt "field:account.configuration.company,milestone_sequence:"
+msgid "Milestone Sequence"
+msgstr "Seqüencia de fites"
+
+msgctxt "field:account.configuration.company,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.configuration.company,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.configuration.company,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice,milestone:"
+msgid "Milestone"
+msgstr "Fita"
+
+msgctxt "field:account.invoice,milestone_group:"
+msgid "Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "field:account.invoice-account.invoice.milestone,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice-account.invoice.milestone,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice-account.invoice.milestone,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice-account.invoice.milestone,invoice:"
+msgid "Invoice"
+msgstr "Factura"
+
+msgctxt "field:account.invoice-account.invoice.milestone,milestone:"
+msgid "Milestone"
+msgstr "Fita"
+
+msgctxt "field:account.invoice-account.invoice.milestone,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice-account.invoice.milestone,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice-account.invoice.milestone,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone,amount:"
+msgid "Amount"
+msgstr "Import"
+
+msgctxt "field:account.invoice.milestone,code:"
+msgid "Code"
+msgstr "Codi"
+
+msgctxt "field:account.invoice.milestone,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice.milestone,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice.milestone,currency_digits:"
+msgid "Currency Digits"
+msgstr "Dígits de la moneda"
+
+msgctxt "field:account.invoice.milestone,date:"
+msgid "Date"
+msgstr "Data"
+
+msgctxt "field:account.invoice.milestone,description:"
+msgid "Description"
+msgstr "Descripció"
+
+msgctxt "field:account.invoice.milestone,group:"
+msgid "Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "field:account.invoice.milestone,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone,invoice:"
+msgid "Invoice"
+msgstr "Factura"
+
+msgctxt "field:account.invoice.milestone,invoice_date:"
+msgid "Invoice Date"
+msgstr "Data factura"
+
+msgctxt "field:account.invoice.milestone,invoice_method:"
+msgid "Invoice Method"
+msgstr "Mètode de facturació"
+
+msgctxt "field:account.invoice.milestone,moves_to_invoice:"
+msgid "Moves to Invoice"
+msgstr "Moviments a facturar"
+
+msgctxt "field:account.invoice.milestone,party:"
+msgid "Party"
+msgstr "Tercer"
+
+msgctxt "field:account.invoice.milestone,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone,state:"
+msgid "State"
+msgstr "Estat"
+
+msgctxt "field:account.invoice.milestone,trigger:"
+msgid "Kind"
+msgstr "Tipus"
+
+msgctxt "field:account.invoice.milestone,trigger_date:"
+msgid "Trigger Date"
+msgstr "Data assoliment"
+
+msgctxt "field:account.invoice.milestone,trigger_lines:"
+msgid "Trigger Lines"
+msgstr "Línies de venda"
+
+msgctxt "field:account.invoice.milestone,type:"
+msgid "Milestone Type"
+msgstr "Tipus de fita"
+
+msgctxt "field:account.invoice.milestone,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone-sale.line,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice.milestone-sale.line,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice.milestone-sale.line,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone-sale.line,milestone:"
+msgid "Account Invoice Milestone"
+msgstr "Fita de facturació"
+
+msgctxt "field:account.invoice.milestone-sale.line,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone-sale.line,sale_line:"
+msgid "Sale Line"
+msgstr "Línia de venta"
+
+msgctxt "field:account.invoice.milestone-sale.line,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone-sale.line,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone-stock.move,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice.milestone-stock.move,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice.milestone-stock.move,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone-stock.move,milestone:"
+msgid "Account Invoice Milestone"
+msgstr "Fita de facturació"
+
+msgctxt "field:account.invoice.milestone-stock.move,move:"
+msgid "Move"
+msgstr "Moviment"
+
+msgctxt "field:account.invoice.milestone-stock.move,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone-stock.move,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone-stock.move,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone.group,amount:"
+msgid "Amount"
+msgstr "Import"
+
+msgctxt "field:account.invoice.milestone.group,amount_assigned:"
+msgid "Amount  Assigned"
+msgstr "Import assignat"
+
+msgctxt "field:account.invoice.milestone.group,amount_invoiced:"
+msgid "Amount Invoiced"
+msgstr "Import facturat"
+
+msgctxt "field:account.invoice.milestone.group,amount_invoiced_advancement:"
+msgid "Amount Invoiced advancement"
+msgstr "Import facturat per avançat"
+
+msgctxt "field:account.invoice.milestone.group,amount_to_assign:"
+msgid "Amount to Assign"
+msgstr "Import per assignar"
+
+msgctxt "field:account.invoice.milestone.group,code:"
+msgid "Code"
+msgstr "Codi"
+
+msgctxt "field:account.invoice.milestone.group,company:"
+msgid "Company"
+msgstr "Empresa"
+
+msgctxt "field:account.invoice.milestone.group,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice.milestone.group,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice.milestone.group,currency:"
+msgid "Currency"
+msgstr "Moneda"
+
+msgctxt "field:account.invoice.milestone.group,currency_digits:"
+msgid "Currency Digits"
+msgstr "Dígits de la moneda"
+
+msgctxt "field:account.invoice.milestone.group,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone.group,invoice_shipments:"
+msgid "Invoice Shipments"
+msgstr "Factura albarans"
+
+msgctxt "field:account.invoice.milestone.group,lines:"
+msgid "Milestones"
+msgstr "Fites"
+
+msgctxt "field:account.invoice.milestone.group,party:"
+msgid "Party"
+msgstr "Tercer"
+
+msgctxt "field:account.invoice.milestone.group,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone.group,sales:"
+msgid "Sales"
+msgstr "Vendes"
+
+msgctxt "field:account.invoice.milestone.group,state:"
+msgid "State"
+msgstr "Estat"
+
+msgctxt "field:account.invoice.milestone.group,to_assign:"
+msgid "Lines to Assign"
+msgstr "Línies per assignar"
+
+msgctxt "field:account.invoice.milestone.group,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone.group,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone.group.type,active:"
+msgid "Active"
+msgstr "Actiu"
+
+msgctxt "field:account.invoice.milestone.group.type,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice.milestone.group.type,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice.milestone.group.type,description:"
+msgid "Description"
+msgstr "Descripció"
+
+msgctxt "field:account.invoice.milestone.group.type,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone.group.type,invoice_shipments:"
+msgid "Invoice Shipments"
+msgstr "Factura albarans"
+
+msgctxt "field:account.invoice.milestone.group.type,lines:"
+msgid "Lines"
+msgstr "Línies"
+
+msgctxt "field:account.invoice.milestone.group.type,name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone.group.type,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone.group.type,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone.group.type,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone.type,amount:"
+msgid "Amount"
+msgstr "Import"
+
+msgctxt "field:account.invoice.milestone.type,create_date:"
+msgid "Create Date"
+msgstr "Data de creació"
+
+msgctxt "field:account.invoice.milestone.type,create_uid:"
+msgid "Create User"
+msgstr "Usuari de creació"
+
+msgctxt "field:account.invoice.milestone.type,currency:"
+msgid "Currency"
+msgstr "Moneda"
+
+msgctxt "field:account.invoice.milestone.type,currency_digits:"
+msgid "Currency Digits"
+msgstr "Dígits de la moneda"
+
+msgctxt "field:account.invoice.milestone.type,day:"
+msgid "Day of Month"
+msgstr "Dia del mes"
+
+msgctxt "field:account.invoice.milestone.type,days:"
+msgid "Number of Days"
+msgstr "Número de dies"
+
+msgctxt "field:account.invoice.milestone.type,divisor:"
+msgid "Divisor"
+msgstr "Divisor"
+
+msgctxt "field:account.invoice.milestone.type,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone.type,kind:"
+msgid "Kind"
+msgstr "Tipus"
+
+msgctxt "field:account.invoice.milestone.type,milestone_group:"
+msgid "Milestone Group Type"
+msgstr "Tipus de Grups de fites"
+
+msgctxt "field:account.invoice.milestone.type,month:"
+msgid "Month"
+msgstr "Mes"
+
+msgctxt "field:account.invoice.milestone.type,months:"
+msgid "Number of Months"
+msgstr "Número de mesos"
+
+msgctxt "field:account.invoice.milestone.type,percentage:"
+msgid "Percentage"
+msgstr "Percentatge"
+
+msgctxt "field:account.invoice.milestone.type,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone.type,sequence:"
+msgid "Sequence"
+msgstr "Seqüència"
+
+msgctxt "field:account.invoice.milestone.type,trigger:"
+msgid "Trigger"
+msgstr "Disparador"
+
+msgctxt "field:account.invoice.milestone.type,type:"
+msgid "Type"
+msgstr "Tipus"
+
+msgctxt "field:account.invoice.milestone.type,weekday:"
+msgid "Day of Week"
+msgstr "Dia de la setmana"
+
+msgctxt "field:account.invoice.milestone.type,weeks:"
+msgid "Number of Weeks"
+msgstr "Número de setmanes"
+
+msgctxt "field:account.invoice.milestone.type,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone.type,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:sale.sale,advancement_invoices:"
+msgid "Advancement Invoices"
+msgstr "Factures d'avançament"
+
+msgctxt "field:sale.sale,milestone_group:"
+msgid "Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "field:sale.sale,milestone_group_type:"
+msgid "Milestone Group Type"
+msgstr "Tipus de Grups de fites"
+
+msgctxt "field:sale.sale,milestones:"
+msgid "Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "help:account.invoice.milestone.group,invoice_shipments:"
+msgid ""
+"If marked a new milestone (and invoice) will be created for eachshipment "
+"delivered."
+msgstr ""
+"Si es marca es creará una nova fita (i factura) per a cada albará enviat."
+
+msgctxt "help:account.invoice.milestone.group.type,invoice_shipments:"
+msgid ""
+"If marked a new milestone (and invoice) will be created for eachshipment "
+"delivered."
+msgstr ""
+"Si es marca es creará una nova fita (i factura) per a cada albará enviat."
+
+msgctxt "help:account.invoice.milestone.type,sequence:"
+msgid "Use to order lines in ascending order"
+msgstr "Serveix per ordenar les línies de forma ascendent."
+
+msgctxt "help:account.invoice.milestone.type,trigger:"
+msgid "When the milestone will be computed"
+msgstr "Quan es generarà la fita"
+
+msgctxt "model:account.configuration.company,name:"
+msgid "Account Configuration per Company"
+msgstr "Configuració financiera per empresa"
+
+msgctxt "model:account.invoice-account.invoice.milestone,name:"
+msgid "Invoice - Milestone"
+msgstr "Factura - Fita"
+
+msgctxt "model:account.invoice.milestone,name:"
+msgid "Account Invoice Milestone"
+msgstr "Fita de facturació"
+
+msgctxt "model:account.invoice.milestone-sale.line,name:"
+msgid "Account Invoice Milestone - Sale Line"
+msgstr "Fita de facturació - Línia de venda"
+
+msgctxt "model:account.invoice.milestone-stock.move,name:"
+msgid "Account Invoice Milestone - Stock Move"
+msgstr "Fita de facturació - Moviment d'existències"
+
+msgctxt "model:account.invoice.milestone.group,name:"
+msgid "Account Invoice Milestone"
+msgstr "Fita de facturació"
+
+msgctxt "model:account.invoice.milestone.group.type,name:"
+msgid "Account Invoice Milestone Group Type"
+msgstr "Tipus de Grups de fites de facturació"
+
+msgctxt "model:account.invoice.milestone.type,name:"
+msgid "Account Invoice Milestone Type"
+msgstr "Tipus de fita de facturació"
+
+msgctxt "model:ir.action,name:act_account_invoice_milestone"
+msgid "Milestone"
+msgstr "Fita"
+
+msgctxt "model:ir.action,name:act_account_invoice_milestone_group"
+msgid "Milestone Groups"
+msgstr "Grups de fites"
+
+msgctxt "model:ir.action,name:act_account_invoice_milestone_group_type"
+msgid "Milestone Group Types"
+msgstr "Tipus de Grups de fites"
+
+msgctxt "model:ir.action,name:act_account_invoice_milestone_type"
+msgid "Milestone Types"
+msgstr "Tipus de fites"
+
+msgctxt "model:ir.action,name:act_open_invoices"
+msgid "Invoices"
+msgstr "Factures"
+
+msgctxt "model:ir.action,name:act_open_sales"
+msgid "Sales"
+msgstr "Vendes"
+
+msgctxt "model:ir.action.act_window.domain,name:act_milestone_domain_all"
+msgid "All"
+msgstr "Tots"
+
+msgctxt "model:ir.action.act_window.domain,name:act_milestone_domain_approved"
+msgid "Approved"
+msgstr "Aprovat"
+
+msgctxt "model:ir.action.act_window.domain,name:act_milestone_domain_draft"
+msgid "Draft"
+msgstr "Esborrany"
+
+msgctxt "model:ir.action.act_window.domain,name:act_milestone_domain_failed"
+msgid "Failed"
+msgstr "Fallat"
+
+msgctxt ""
+"model:ir.action.act_window.domain,name:act_milestone_domain_processing"
+msgid "Processing"
+msgstr "En procès"
+
+msgctxt ""
+"model:ir.action.act_window.domain,name:act_milestone_domain_succeeded"
+msgid "Succeeded"
+msgstr "Amb èxit"
+
+msgctxt "model:ir.sequence,name:sequence_milestone"
+msgid "Milestone"
+msgstr "Fita"
+
+msgctxt "model:ir.sequence,name:sequence_milestone_group"
+msgid "Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "model:ir.sequence.type,name:sequence_type_milestone"
+msgid "Account Invoice Milestone"
+msgstr "Fita de facturació"
+
+msgctxt "model:ir.sequence.type,name:sequence_type_milestone_group"
+msgid "Account Invoice Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "model:ir.ui.menu,name:menu_account_invoice_milestone"
+msgid "Milestones"
+msgstr "Fites"
+
+msgctxt "model:ir.ui.menu,name:menu_account_invoice_milestone_group"
+msgid "Milestone Groups"
+msgstr "Grups de fites"
+
+msgctxt "model:ir.ui.menu,name:menu_account_invoice_milestone_group_type"
+msgid "Milestone Group Types"
+msgstr "Tipus de Grups de fites"
+
+msgctxt "model:ir.ui.menu,name:menu_account_invoice_milestone_type"
+msgid "Milestone Types"
+msgstr "Tipus de fites"
+
+msgctxt "model:ir.ui.menu,name:menu_milestone"
+msgid "Milestones"
+msgstr "Fites"
+
+msgctxt "model:ir.ui.menu,name:menu_milestone_configuration"
+msgid "Milestones"
+msgstr "Fites"
+
+msgctxt "model:res.group,name:group_account_invoice_milestone"
+msgid "Invoice Milestone"
+msgstr "Fites de facturació"
+
+msgctxt "model:res.group,name:group_account_invoice_milestone_admin"
+msgid "Invoice Milestone Administration"
+msgstr "Administració de fites de facturació"
+
+msgctxt "selection:account.invoice.milestone,invoice_method:"
+msgid "Amount"
+msgstr "Import"
+
+msgctxt "selection:account.invoice.milestone,invoice_method:"
+msgid "Goods"
+msgstr "Béns"
+
+msgctxt "selection:account.invoice.milestone,state:"
+msgid "Cancel"
+msgstr "Cancel·lat"
+
+msgctxt "selection:account.invoice.milestone,state:"
+msgid "Confirmed"
+msgstr "Confirmat"
+
+msgctxt "selection:account.invoice.milestone,state:"
+msgid "Draft"
+msgstr "Esborrany"
+
+msgctxt "selection:account.invoice.milestone,state:"
+msgid "Failed"
+msgstr "Fallat"
+
+msgctxt "selection:account.invoice.milestone,state:"
+msgid "Processing"
+msgstr "En procès"
+
+msgctxt "selection:account.invoice.milestone,state:"
+msgid "Succeeded"
+msgstr "Amb èxit"
+
+msgctxt "selection:account.invoice.milestone,trigger:"
+msgid "Manual"
+msgstr "Manual"
+
+msgctxt "selection:account.invoice.milestone,trigger:"
+msgid "System"
+msgstr "Sistema"
+
+msgctxt "selection:account.invoice.milestone.group,state:"
+msgid "Completed"
+msgstr "Completat"
+
+msgctxt "selection:account.invoice.milestone.group,state:"
+msgid "Paid"
+msgstr "Pagada"
+
+msgctxt "selection:account.invoice.milestone.group,state:"
+msgid "Pending"
+msgstr "Pendent"
+
+msgctxt "selection:account.invoice.milestone.group,state:"
+msgid "To assign"
+msgstr "Per assignar"
+
+msgctxt "selection:account.invoice.milestone.type,kind:"
+msgid "Manual"
+msgstr "Manual"
+
+msgctxt "selection:account.invoice.milestone.type,kind:"
+msgid "System"
+msgstr "Sistema"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "April"
+msgstr "Abril"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "August"
+msgstr "Agost"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "December"
+msgstr "Desembre"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "February"
+msgstr "Febrer"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "January"
+msgstr "Gener"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "July"
+msgstr "Juliol"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "June"
+msgstr "Juny"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "March"
+msgstr "Març"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "May"
+msgstr "Maig"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "November"
+msgstr "Novembre"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "October"
+msgstr "Octubre"
+
+msgctxt "selection:account.invoice.milestone.type,month:"
+msgid "September"
+msgstr "Setembre"
+
+msgctxt "selection:account.invoice.milestone.type,trigger:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice.milestone.type,trigger:"
+msgid "On % sent"
+msgstr "Al enviar un %"
+
+msgctxt "selection:account.invoice.milestone.type,trigger:"
+msgid "On Order Accepted"
+msgstr "Al accepta la comanda"
+
+msgctxt "selection:account.invoice.milestone.type,trigger:"
+msgid "On Order Finished"
+msgstr "Al finalitzar la comanda"
+
+msgctxt "selection:account.invoice.milestone.type,type:"
+msgid "Fixed"
+msgstr "Fix"
+
+msgctxt "selection:account.invoice.milestone.type,type:"
+msgid "Percentage on Total"
+msgstr "Percentatge sobre total"
+
+msgctxt "selection:account.invoice.milestone.type,type:"
+msgid "Remainder"
+msgstr "Remanent"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid ""
+msgstr " "
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Friday"
+msgstr "Divendres"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Monday"
+msgstr "Dilluns"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Saturday"
+msgstr "Dissabte"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Sunday"
+msgstr "Diumenge"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Thursday"
+msgstr "Dijous"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Tuesday"
+msgstr "Dimarts"
+
+msgctxt "selection:account.invoice.milestone.type,weekday:"
+msgid "Wednesday"
+msgstr "Dimecres"
+
+msgctxt "selection:sale.configuration,sale_invoice_method:"
+msgid "Based on Milestones"
+msgstr "Basat en fites"
+
+msgctxt "selection:sale.sale,invoice_method:"
+msgid "Based on Milestones"
+msgstr "Basat en fites"
+
+msgctxt "view:account.invoice.milestone.group.type:"
+msgid "Milestone Group Type"
+msgstr "Tipus de Grups de fites"
+
+msgctxt "view:account.invoice.milestone.group.type:"
+msgid "Milestone Group Types"
+msgstr "Tipus de Grups de fites"
+
+msgctxt "view:account.invoice.milestone.group:"
+msgid "Close"
+msgstr "Tanca"
+
+msgctxt "view:account.invoice.milestone.group:"
+msgid "Milestone Group"
+msgstr "Grup de fites"
+
+msgctxt "view:account.invoice.milestone.type:"
+msgid "Invoice data calculation"
+msgstr "Càlcul data de factura"
+
+msgctxt "view:account.invoice.milestone.type:"
+msgid "Milestone Type"
+msgstr "Tipus de fita"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Cancel"
+msgstr "Cancel·la"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Confirm"
+msgstr "Confirma"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Draft"
+msgstr "Esborrany"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Fail"
+msgstr "Fallat"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Invoice"
+msgstr "Factura"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Milestone"
+msgstr "Fita"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Milestones"
+msgstr "Fites"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Process"
+msgstr "Processa"
+
+msgctxt "view:account.invoice.milestone:"
+msgid "Succeed"
+msgstr "Amb èxit"

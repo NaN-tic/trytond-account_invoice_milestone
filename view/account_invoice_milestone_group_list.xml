@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- The COPYRIGHT file at the top level of this repository contains the full
+     copyright notices and license terms. -->
+<tree string="Milestone Group">
+    <field name="code"/>
+    <field name="party"/>
+    <field name="invoice_shipments"/>
+    <field name="currency"/>
+    <field name="total_amount"/>
+    <field name="merited_amount"/>
+    <field name="amount_to_assign"/>
+    <field name="amount_to_invoice"/>
+    <field name="state"/>
+    <field name="company" tree_invisible="1"/>
+</tree>

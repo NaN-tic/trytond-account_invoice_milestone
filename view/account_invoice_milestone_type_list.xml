@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<!-- The COPYRIGHT file at the top level of this repository contains the full
+     copyright notices and license terms. -->
+<tree string="Milestone Type" sequence="sequence">
+    <field name="milestone_group"/>
+    <field name="kind"/>
+    <field name="trigger"/>
+    <field name="trigger_shipped_amount" factor="100">
+        <suffix string="%"/>
+    </field>
+    <field name="invoice_method"/>
+    <field name="percentage">
+        <suffix string="%"/>
+    </field>
+    <field name="amount"/>
+    <field name="currency"/>
+    <field name="months"/>
+    <field name="month"/>
+    <field name="weeks"/>
+    <field name="weekday"/>
+    <field name="days"/>
+    <field name="day"/>
+    <!-- <field name="currency_digits" tree_invisible="1"/> -->
+</tree>

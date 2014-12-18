@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms. -->
+<data>
+    <xpath expr="/form" position="inside">
+        <label name="milestone_advancement_product"/>
+        <field name="milestone_advancement_product"/>
+        <label name="milestone_group_sequence"/>
+        <field name="milestone_group_sequence"/>
+        <label name="milestone_sequence"/>
+        <field name="milestone_sequence"/>
+    </xpath>
+</data>

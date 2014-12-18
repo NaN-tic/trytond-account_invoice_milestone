@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!-- The COPYRIGHT file at the top level of this repository contains the full
+     copyright notices and license terms. -->
+<form string="Milestone Group">
+    <label name="code"/>
+    <field name="code"/>
+    <label name="company"/>
+    <field name="company"/>
+    <label name="party"/>
+    <field name="party"/>
+    <label name="currency"/>
+    <field name="currency"/>
+    <label name="invoice_shipments"/>
+    <field name="invoice_shipments"/>
+    <newline/>
+    <label name="total_amount"/>
+    <field name="total_amount"/>
+    <label name="merited_amount"/>
+    <field name="merited_amount"/>
+    <label name="amount_to_invoice"/>
+    <field name="amount_to_invoice"/>
+    <label name="invoiced_amount"/>
+    <field name="invoiced_amount"/>
+    <label name="amount_to_assign"/>
+    <field name="amount_to_assign"/>
+    <label name="assigned_amount"/>
+    <field name="assigned_amount"/>
+    <notebook>
+        <page name="milestones">
+            <field name="milestones" colspan="4"/>
+       </page>
+        <page name="sales">
+            <field name="sales" colspan="2"/>
+        </page>
+   </notebook>
+    <group id="state_buttons" colspan="4">
+        <label name="state"/>
+        <field name="state"/>
+        <group id="buttons" colspan="2">
+            <button name="close" string="Close"
+                confirm="It will invoice the remaining amount in group's sales. Are you sure?"/>
+        </group>
+    </group>
+</form>
+
