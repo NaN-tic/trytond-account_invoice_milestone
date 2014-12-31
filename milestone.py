@@ -126,7 +126,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             'invisible': ((Eval('kind') != 'system')
                 | (Eval('trigger') != 'percentage')),
             }, depends=['kind', 'trigger'],
-        help="The percentage of sent  mount over the total amount of "
+        help="The percentage of sent amount over the total amount of "
         "Milestone's Trigger Sale Lines.\n"
         "When the Milestone is computed for a Sale, all this sale lines are "
         "added as Milestone's Trigger Lines. You'll be able to change this.")
@@ -310,6 +310,9 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
         return milestone
 
 
+_TRIGGER_SALE_STATES = ('confirmed', 'processing', 'done')
+
+
 class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
     'Account Invoice Milestone Group'
     __name__ = 'account.invoice.milestone.group'
@@ -395,6 +398,10 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
     def __setup__(cls):
         super(AccountInvoiceMilestoneGroup, cls).__setup__()
         cls._buttons.update({
+                'check_triggers': {
+                    'readonly': Eval('state').in_(['completed', 'paid']),
+                    'icon': 'tryton-executable',
+                    },
                 'close': {
                     'readonly': Eval('state').in_(['completed', 'paid']),
                     'icon': 'tryton-ok',
@@ -599,14 +606,19 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             return _ZERO
         return sum(il.amount for il in advancement_invoice_lines)
 
+    @classmethod
+    @ModelView.button
+    def check_triggers(cls, groups):
+        for group in groups:
+            sales_from = [s for s in group.sales
+                if s.state in _TRIGGER_SALE_STATES]
+            group.check_trigger_condition(sales_from)
+
     def check_trigger_condition(self, sales_from):
         pool = Pool()
         Milestone = pool.get('account.invoice.milestone')
 
-        # TODO: allow sales_from == None to call it from cron => get group's
-        # sales in the expected state
-        assert all(s.state in ('confirmed', 'processing', 'done')
-            for s in sales_from)
+        assert all(s.state in _TRIGGER_SALE_STATES for s in sales_from)
 
         todo = []
         for milestone in self.milestones:
@@ -936,7 +948,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 'invoice_not_done_move': ('Milestone "%(milestone)s" can not '
                     'be invoiced because its move "%(move)s is not done.'),
                 'no_advancement_product': ('An advancement product must be '
-                    'defined in order to generate advancement invoices.'
+                    'defined in order to generate advancement invoices.\n'
                     'Please define one in account configuration.'),
                 'missing_milestone_sequence': ('There is no milestone sequence'
                     'defined. Please define one in account configuration'),

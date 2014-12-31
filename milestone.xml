@@ -59,6 +59,18 @@
             <field name="act_window" ref="act_invoice_milestone_group"/>
         </record>
 
+        <record model="ir.model.button"
+                id="milestone_group_check_triggers_button">
+            <field name="name">check_triggers</field>
+            <field name="model"
+                search="[('model', '=', 'account.invoice.milestone.group')]"/>
+        </record>
+        <record model="ir.model.button-res.group"
+                id="milestone_group_check_triggers_button_group_milestone">
+            <field name="button" ref="milestone_group_check_triggers_button"/>
+            <field name="group" ref="group_invoice_milestone"/>
+        </record>
+
         <record model="ir.model.button" id="milestone_group_close_button">
             <field name="name">close</field>
             <field name="model"
