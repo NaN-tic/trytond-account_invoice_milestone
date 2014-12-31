@@ -227,15 +227,20 @@ class SaleLine:
             * self.unit_price)
 
     def get_invoice_line(self, invoice_type):
+        context = Transaction().context
+
         old_line_moves = None
         if (self.sale.invoice_method == 'milestone'
                 and self.sale.milestone_group.invoice_shipments
-                and not Transaction().context.get('invoicing_from_milestone')):
+                and not context.get('invoicing_from_milestone')):
             # Don't invoice moves that are in some milestone
             old_line_moves = self.moves
             self.moves = [m for m in self.moves if not m.milestone]
 
         res = super(SaleLine, self).get_invoice_line(invoice_type)
+        if context.get('milestone_invoice_line_description'):
+            for l in res:
+                l.description = context['milestone_invoice_line_description']
 
         if old_line_moves is not None:
             self.moves = old_line_moves

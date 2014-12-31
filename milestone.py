@@ -753,7 +753,11 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         'on_change_with_group_sales_moves')
 
     code = fields.Char('Code', required=True, readonly=True)
-    description = fields.Char('Description', states=_STATES, depends=_DEPENDS)
+    description = fields.Char('Description', states=_STATES, depends=_DEPENDS,
+        help='It will be used to prepare the description field of invoice '
+        'lines.\nYou can use the next tags and they will be replaced by these '
+        'fields from the sale\'s related to milestone: {sale_description}, '
+        '{sale_reference}.')
     state = fields.Selection([
             ('draft', 'Draft'),
             ('confirmed', 'Confirmed'),
@@ -1145,9 +1149,13 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 lines += self._get_moves_invoice_lines()
             else:  # remainder
                 for sale in self.sales_to_invoice:
-                    for sale_line in sale.lines:
-                        lines += sale_line.get_invoice_line('out_invoice')
-                        lines += sale_line.get_invoice_line('out_credit_note')
+                    inv_line_desc = self.calc_invoice_line_description([sale])
+                    with Transaction().set_context(
+                            milestone_invoice_line_description=inv_line_desc):
+                        for sale_line in sale.lines:
+                            lines += sale_line.get_invoice_line('out_invoice')
+                            lines += sale_line.get_invoice_line(
+                                'out_credit_note')
 
             if lines:
                 amount = sum((Decimal(str(l.quantity)) * l.unit_price
@@ -1180,6 +1188,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             return
 
         product = self.advancement_product
+        sales = list(set(l.sale for l in self.trigger_lines))
 
         with Transaction().set_user(0, set_context=True):
             invoice_line = InvoiceLine()
@@ -1189,8 +1198,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         invoice_line.sequence = 1
 
         invoice_line.product = product
-        if self.description:
-            invoice_line.description = self.description
+        invoice_line.description = self.calc_invoice_line_description(sales)
         invoice_line.quantity = 1.0
         invoice_line.unit = product.default_uom
         for key, value in invoice_line.on_change_product().iteritems():
@@ -1224,10 +1232,32 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             sale_line.moves = moves
             invoice_type = ('out_credit_note' if sale_line.quantity < 0.0
                 else 'out_invoice')
-            with Transaction().set_context(invoicing_from_milestone=True):
+            inv_line_desc = self.calc_invoice_line_description(
+                [sale_line.sale])
+            with Transaction().set_context(invoicing_from_milestone=True,
+                    milestone_invoice_line_description=inv_line_desc):
                 invoice_lines += sale_line.get_invoice_line(invoice_type)
             sale_line.moves = old_sale_line_moves
         return invoice_lines
+
+    def calc_invoice_line_description(self, sales):
+        if (not self.description or not sales
+                or ('sale_reference' not in self.description
+                    and 'sale_description' not in self.description)):
+            return self.description
+
+            sales = list(set(m.origin.sale for m in self.moves_to_invoice))
+        if not sales:
+            return self.description
+
+        description = self.description
+        if '{sale_reference}' in description:
+            description = description.replace('{sale_reference}',
+                ", ".join(s.reference for s in sales))
+        if '{sale_description}' in description:
+            description = description.replace('{sale_description}',
+                ", ".join(s.description for s in sales if s.description))
+        return description
 
     def get_compensation_line(self, invoice_amount):
         pool = Pool()
