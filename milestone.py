@@ -1144,6 +1144,11 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         invoice.account = self.party.account_receivable
         invoice.payment_term = payment_term
         invoice.invoice_date = self.planned_invoice_date
+
+        if getattr(self.party, 'agent'):
+            # Compatibility with commission_party
+            invoice.agent = self.party.agent
+
         return invoice
 
     def _get_invoice_type_and_lines(self):
