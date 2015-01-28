@@ -355,12 +355,14 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         'get_state')
 
     sales = fields.One2Many('sale.sale', 'milestone_group', 'Sales',
-        readonly=True, domain=[
+        readonly=True,
+        domain=[
             ('invoice_method', '=', 'milestone'),
             ('company', '=', Eval('company', -1)),
             ('currency', '=', Eval('currency', -1)),
             ('party', '=', Eval('party', -1)),
-            ], depends=['company'])
+            ],
+        depends=['company', 'currency', 'party'])
 
     total_amount = fields.Function(fields.Numeric('Total Amount',
             digits=(16, Eval('currency_digits', 2)),
