@@ -357,7 +357,6 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
     sales = fields.One2Many('sale.sale', 'milestone_group', 'Sales',
         readonly=True,
         domain=[
-            ('invoice_method', '=', 'milestone'),
             ('company', '=', Eval('company', -1)),
             ('currency', '=', Eval('currency', -1)),
             ('party', '=', Eval('party', -1)),
@@ -410,6 +409,10 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                     },
                 })
         cls._error_messages.update({
+                'invoice_shipment_forbidden': ('You can not configure '
+                    'Milestone Group "%(milestone_group)s" to "Invoice '
+                    'Shipments" because it is related to Sale "%(sale)s" '
+                    'which invoice method is Order.'),
                 'group_with_pending_milestones': (
                     'The Milestone Group "%s" has some pending milestones.\n'
                     'Please, process or cancel all milestones before close '
@@ -589,6 +592,21 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             if fname not in names:
                 del res[fname]
         return res
+
+    @classmethod
+    def validate(cls, milestone_groups):
+        super(AccountInvoiceMilestoneGroup, cls).validate(milestone_groups)
+        for milestone_group in milestone_groups:
+            milestone_group.check_invoice_method()
+
+    def check_invoice_method(self):
+        if self.invoice_shipments:
+            for sale in self.sales:
+                if sale.invoice_method == 'order':
+                    self.raise_user_error('invoice_shipment_forbidden', {
+                            'milestone_group': self.rec_name,
+                            'sale': sale.rec_name,
+                            })
 
     @property
     def invoiced_advancement_amount(self):

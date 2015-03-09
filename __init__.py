@@ -18,7 +18,6 @@ def register():
         AccountInvoiceMilestoneSaleLine,
         AccountInvoiceMilestoneRemainderSale,
         StockMove,
-        SaleConfiguration,
         Sale,
         SaleLine,
         Invoice,

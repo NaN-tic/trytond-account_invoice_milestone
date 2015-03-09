@@ -7,19 +7,8 @@ from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, Bool
 from trytond.transaction import Transaction
 
-__all__ = ['SaleConfiguration', 'Sale', 'SaleLine']
+__all__ = ['Sale', 'SaleLine']
 __metaclass__ = PoolMeta
-
-
-class SaleConfiguration:
-    __name__ = 'sale.configuration'
-
-    @classmethod
-    def __setup__(cls):
-        super(SaleConfiguration, cls).__setup__()
-        milestones = ('milestone', 'Based on Milestones')
-        if milestones not in cls.sale_invoice_method.selection:
-            cls.sale_invoice_method.selection.append(milestones)
 
 
 class Sale:
@@ -28,10 +17,10 @@ class Sale:
     milestone_group_type = fields.Many2One(
         'account.invoice.milestone.group.type', 'Milestone Group Type',
         states={
-            'invisible': Eval('invoice_method') != 'milestone',
+            # 'invisible': Eval('invoice_method') != 'milestone',
             'readonly': ~Eval('state').in_(['draft', 'quotation']),
             },
-        depends=['state', 'invoice_method'])
+        depends=['state'])
     milestone_group = fields.Many2One('account.invoice.milestone.group',
         'Milestone Group', select=True, domain=[
             ('company', '=', Eval('company', -1)),
@@ -39,39 +28,31 @@ class Sale:
             ('party', '=', Eval('party', -1)),
             ],
         states={
-            'invisible': Eval('invoice_method') != 'milestone',
+            # 'invisible': Eval('invoice_method') != 'milestone',
             'required': ((~Eval('state', '').in_(['draft', 'cancel']))
-                & (Eval('invoice_method') == 'milestone') &
-                ~Bool(Eval('milestone_group_type', 0))),
+                # & (Eval('invoice_method') == 'milestone')
+                & ~Bool(Eval('milestone_group_type', 0))),
             'readonly': (~Bool(Eval('party', 0)) |
                 Bool(Eval('milestone_group_type')) |
                 ~Eval('state').in_(['draft', 'quotation'])),
             },
         depends=['company', 'currency', 'party',
-            'invoice_method', 'milestone_group_type', 'state'])
+            'milestone_group_type', 'state'])
     remainder_milestones = fields.Many2Many(
         'account.invoice.milestone-remainder-sale.sale', 'sale', 'milestone',
         'Remainder Milestones', domain=[
             ('group', '=', Eval('milestone_group', -1)),
             ], readonly=True,
         states={
-            'invisible': Eval('invoice_method') != 'milestone',
-            }, depends=['milestone_group', 'invoice_method'])
+            'invisible': ~Bool(Eval('milestone_group')),
+            }, depends=['milestone_group'])
 
     advancement_invoices = fields.Function(fields.One2Many('account.invoice',
             None, 'Advancement Invoices',
             states={
-                'invisible': Eval('invoice_method') != 'milestone',
-                },
-            depends=['invoice_method']),
+                'invisible': ~Bool(Eval('milestone_group')),
+                }, depends=['milestone_group']),
         'get_advancement_invoices')
-
-    @classmethod
-    def __setup__(cls):
-        super(Sale, cls).__setup__()
-        milestones = ('milestone', 'Based on Milestones')
-        if milestones not in cls.invoice_method.selection:
-            cls.invoice_method.selection.append(milestones)
 
     def get_advancement_invoices(self, name):
         if not self.milestone_group:
@@ -93,8 +74,8 @@ class Sale:
 
     def check_method(self):
         super(Sale, self).check_method()
-        if (self.invoice_method == 'milestone'
-                and self.shipment_method in ('invoice', 'manual')):
+        if (self.milestone_group and self.milestone_group.invoice_shipments
+                and self.invoice_method == 'order'):
             self.raise_user_error('invalid_method', (self.rec_name,))
 
     @classmethod
@@ -138,13 +119,12 @@ class Sale:
         Invoice = pool.get('account.invoice')
         Milestone = pool.get('account.invoice.milestone')
 
-        if (self.invoice_method == 'milestone' and
-                not self.milestone_group.invoice_shipments):
+        if self.milestone_group and not self.milestone_group.invoice_shipments:
             return
 
         invoice = super(Sale, self).create_invoice(invoice_type)
 
-        if (invoice and self.invoice_method == 'milestone' and
+        if (invoice and self.milestone_group and
                 self.milestone_group.invoice_shipments):
             milestone = self._get_invoice_milestone(invoice)
             if milestone:
@@ -230,7 +210,7 @@ class SaleLine:
         context = Transaction().context
 
         old_line_moves = None
-        if (self.sale.invoice_method == 'milestone'
+        if (self.sale.milestone_group
                 and self.sale.milestone_group.invoice_shipments
                 and not context.get('invoicing_from_milestone')):
             # Don't invoice moves that are in some milestone
@@ -248,7 +228,7 @@ class SaleLine:
 
     def get_move(self, shipment_type):
         move = super(SaleLine, self).get_move(shipment_type)
-        if (move and self.sale.invoice_method == 'milestone'
+        if (move and self.sale.milestone_group
                 and not self.sale.milestone_group.invoice_shipments):
             if self.moves:
                 milestones = list(set(m.milestone for m in self.moves
@@ -276,7 +256,8 @@ class SaleLine:
             milestones_to_cancel = []
             for sale_line in cls.browse(list(set(sale_lines_to_check))):
                 for move in sale_line.moves_ignored:
-                    if move.milestone.id in milestones_done:
+                    if (not move.milestone
+                            or move.milestone.id in milestones_done):
                         continue
                     milestones_done.append(move.milestone.id)
                     if all(m in m.origin.moves_ignored
