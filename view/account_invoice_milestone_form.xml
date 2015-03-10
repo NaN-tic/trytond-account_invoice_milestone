@@ -29,7 +29,7 @@
     <field name="invoice_method"/>
     <label name="amount"/>
     <field name="amount"/>
-    <field name="moves_to_invoice" colspan="4"/>
+    <field name="sale_lines_to_invoice" colspan="4"/>
     <field name="sales_to_invoice" colspan="4"/>
 
     <group id="planned_invoice_date_calculator" colspan="2" col="4"

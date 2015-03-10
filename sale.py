@@ -139,6 +139,46 @@ class Sale:
 
 class SaleLine:
     __name__ = 'sale.line'
+    milestone = fields.Many2One('account.invoice.milestone', 'Milestone',
+        readonly=True)
+    quantity_to_invoice = fields.Function(fields.Float('Quantity to invoice',
+            digits=(16, Eval('unit_digits', 2)),
+            states={
+                'invisible': Eval('type') != 'line',
+                },
+            depends=['type', 'unit_digits']),
+        'get_quantity_to_invoice')
+
+    def get_quantity_to_invoice(self, name):
+        pool = Pool()
+        Uom = pool.get('product.uom')
+
+        if (self.sale.invoice_method == 'order'
+                or not self.product
+                or self.product.type == 'service'):
+            quantity = abs(self.quantity)
+        else:
+            quantity = 0.0
+            for move in self.moves:
+                if move.state == 'done':
+                    quantity += Uom.compute_qty(move.uom, move.quantity,
+                        self.unit)
+
+        invoice_type = ('out_invoice' if self.quantity >= 0
+            else 'out_credit_note')
+        skip_ids = set(l.id for i in self.sale.invoices_recreated
+            for l in i.lines)
+        for invoice_line in self.invoice_lines:
+            if invoice_line.type != 'line':
+                continue
+            if invoice_line.id not in skip_ids:
+                sign = (1.0 if invoice_type == invoice_line.invoice_type
+                    else -1.0)
+                quantity -= Uom.compute_qty(invoice_line.unit,
+                    sign * invoice_line.quantity, self.unit)
+
+        rounding = self.unit.rounding if self.unit else 0.01
+        return Uom.round(quantity, rounding)
 
     @property
     def shipped_amount(self):
@@ -164,17 +204,6 @@ class SaleLine:
                 l.description = line_description
         return res
 
-    def get_move(self, shipment_type):
-        move = super(SaleLine, self).get_move(shipment_type)
-        if move and self.sale.milestone_group:
-            if self.moves:
-                milestones = list(set(m.milestone for m in self.moves
-                        if m.milestone))
-                if (len(milestones) == 1
-                        and milestones[0].state in ('draft', 'confirmed')):
-                    move.milestone = milestones[0]
-        return move
-
     @classmethod
     def write(cls, *args):
         pool = Pool()
@@ -185,21 +214,14 @@ class SaleLine:
         for records, values in zip(actions, actions):
             for action, moves_ignored in values.get('moves_ignored', []):
                 if action == 'add' and moves_ignored:
-                    sale_lines_to_check += [r.id for r in records]
+                    sale_lines_to_check += [r.id for r in records
+                        if r.milestone]
         super(SaleLine, cls).write(*args)
 
         if sale_lines_to_check:
-            milestones_done = []
-            milestones_to_cancel = []
+            milestones_to_cancel = set()
             for sale_line in cls.browse(list(set(sale_lines_to_check))):
-                for move in sale_line.moves_ignored:
-                    if (not move.milestone
-                            or move.milestone.id in milestones_done):
-                        continue
-                    milestones_done.append(move.milestone.id)
-                    if all(m in m.origin.moves_ignored
-                            for m in move.milestone.moves_to_invoice):
-                        # all moves_to_invoice are ignored
-                        milestones_to_cancel.append(move.milestone)
+                if sale_line.quantity_to_invoice <= 0:
+                    milestones_to_cancel.add(sale_line.milestone)
             if milestones_to_cancel:
-                Milestone.cancel(milestones_to_cancel)
+                Milestone.cancel(list(milestones_to_cancel))

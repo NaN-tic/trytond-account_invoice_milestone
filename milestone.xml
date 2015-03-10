@@ -426,21 +426,6 @@
             <field name="name">invoice_form</field>
         </record>
 
-        <!-- sale.sale -->
-       <record model="ir.ui.view" id="sale_sale_view_form">
-            <field name="model">sale.sale</field>
-            <field name="type">form</field>
-            <field name="inherit" ref="sale.sale_view_form"/>
-            <field name="name">sale_sale_form</field>
-        </record>
-
-        <record model="ir.ui.view" id="sale_sale_view_list">
-            <field name="model">sale.sale</field>
-            <field name="type">tree</field>
-            <field name="inherit" ref="sale.sale_view_tree"/>
-            <field name="name">sale_sale_list</field>
-        </record>
-
         <!-- Menus -->
         <menuitem id="menu_milestone_configuration" name="Milestones"
             parent="account.menu_account_configuration" sequence="30"/>

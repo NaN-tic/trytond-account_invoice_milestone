@@ -261,9 +261,9 @@ msgctxt "field:account.invoice.milestone,months:"
 msgid "Number of Months"
 msgstr "Número de meses"
 
-msgctxt "field:account.invoice.milestone,moves_to_invoice:"
-msgid "Moves to Invoice"
-msgstr "Movimientos a facturar"
+msgctxt "field:account.invoice.milestone,sale_lines_to_invoice:"
+msgid "Sale Lines to Invoice"
+msgstr "Líneas a facturar"
 
 msgctxt "field:account.invoice.milestone,party:"
 msgid "Party"

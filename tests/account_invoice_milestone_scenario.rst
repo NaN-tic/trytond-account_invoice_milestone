@@ -350,8 +350,8 @@ Create a second milestone based on the shipment of goods::
     >>> second_milestone = group.lines.new()
     >>> second_milestone.invoice_method = 'goods'
     >>> second_milestone.trigger = 'manual'
-    >>> second_milestone.moves_to_invoice.append(
-    ...     SaleLine(goods_line.moves[0].id))
+    >>> second_milestone.sale_lines_to_invoice.append(
+    ...     SaleLine(goods_line.id))
     >>> group.save()
     >>> group.reload()
     >>> group.amount_to_assign
@@ -584,10 +584,8 @@ Make a partial sale with milestone and close the milestone::
     u'goods'
     >>> new_milestone.trigger
     u'system'
-    >>> stock_move, = new_milestone.moves_to_invoice
-    >>> stock_move.state
-    u'draft'
-    >>> stock_move.quantity
+    >>> sale_line, = new_milestone.sale_lines_to_invoice
+    >>> sale_line.quantity
     10.0
 
 Make a partial sale with milestone and check invoices are correctly linked
@@ -651,7 +649,7 @@ to stock moves::
     >>> sorted([m.state for m in group.lines])
     [u'processing', u'processing']
     >>> _, second_milestone = group.lines
-    >>> len(second_milestone.moves_to_invoice)
+    >>> len(second_milestone.sale_lines_to_invoice)
     2
     >>> _, new_shipment = sale.shipments
     >>> new_shipment.click('wait')
@@ -673,13 +671,11 @@ to stock moves::
     u'goods'
     >>> new_milestone.invoice == new_invoice
     True
-    >>> move, = new_milestone.moves_to_invoice
-    >>> move.quantity
+    >>> sale_line, = new_milestone.sale_lines_to_invoice
+    >>> sale_line.quantity
     15.0
-    >>> move.product == product
+    >>> sale_line.product == product
     True
-    >>> move.state
-    u'done'
 
 Create a milestone group type with there diferent milestone types::
 
@@ -871,8 +867,8 @@ Create a new milestone to invoice it::
     >>> milestone = group.lines.new()
     >>> milestone.kind = 'manual'
     >>> milestone.invoice_method = 'goods'
-    >>> milestone.moves_to_invoice.extend([Move(x.id)
-    ...     for x in return_sale.moves])
+    >>> milestone.sale_lines_to_invoice.extend([SaleLine(x.id)
+    ...     for x in return_sale.lines if x.type == 'line'])
     >>> group.save()
     >>> _, _, _, milestone = group.lines
     >>> milestone.click('confirm')
