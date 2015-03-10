@@ -4,6 +4,5 @@
 <tree string="Milestone Group Types">
     <field name="name"/>
     <field name="description" tree_invisible="1"/>
-    <field name="invoice_shipments"/>
     <field name="active"/>
 </tree>

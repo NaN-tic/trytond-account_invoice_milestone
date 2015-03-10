@@ -4,7 +4,6 @@
 <tree string="Milestone Group">
     <field name="code"/>
     <field name="party"/>
-    <field name="invoice_shipments"/>
     <field name="currency"/>
     <field name="total_amount"/>
     <field name="merited_amount"/>

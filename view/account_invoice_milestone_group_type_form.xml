@@ -8,7 +8,5 @@
     <field name="active"/>
     <label name="description"/>
     <field name="description" colspan="3"/>
-    <label name="invoice_shipments"/>
-    <field name="invoice_shipments"/>
     <field name="lines" colspan="4"/>
 </form>

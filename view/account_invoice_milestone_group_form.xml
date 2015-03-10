@@ -10,8 +10,6 @@
     <field name="party"/>
     <label name="currency"/>
     <field name="currency"/>
-    <label name="invoice_shipments"/>
-    <field name="invoice_shipments"/>
     <newline/>
     <label name="total_amount"/>
     <field name="total_amount"/>

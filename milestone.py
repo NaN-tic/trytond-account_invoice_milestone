@@ -33,9 +33,6 @@ class AccountInvoiceMilestoneGroupType(ModelSQL, ModelView):
     name = fields.Char('Name', required=True)
     active = fields.Boolean('Active')
     description = fields.Char('Description')
-    invoice_shipments = fields.Boolean('Invoice Shipments',
-        help='If marked a new milestone (and invoice) will be created for each'
-        'shipment delivered.')
     lines = fields.One2Many('account.invoice.milestone.type',
         'milestone_group', 'Lines')
 
@@ -70,9 +67,7 @@ class AccountInvoiceMilestoneGroupType(ModelSQL, ModelView):
         # TODO implement business_days
         # http://pypi.python.org/pypi/BusinessHours/
         group = sale.milestone_group
-        if group:
-            assert group.invoice_shipments == self.invoice_shipments
-        else:
+        if not group:
             group = self._get_milestones_group(sale)
             group.save()
         sale.milestone_group = group
@@ -93,7 +88,6 @@ class AccountInvoiceMilestoneGroupType(ModelSQL, ModelView):
         group.company = sale.company
         group.currency = sale.currency
         group.party = sale.party
-        group.invoice_shipments = self.invoice_shipments
         group.sales = []
         group.sales.append(sale)
         return group
@@ -332,11 +326,6 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
     party = fields.Many2One('party.party', 'Party', required=True, states={
             'readonly': Bool(Eval('milestones', [])),
             }, depends=['milestones'])
-    invoice_shipments = fields.Boolean('Invoice Shipments', states={
-            'readonly': Eval('state', '').in_(['completed', 'paid'])
-            }, depends=['state'],
-        help='If marked a new milestone (and invoice) will be created for each'
-        'shipment delivered.')
     milestones = fields.One2Many('account.invoice.milestone', 'group',
         'Milestones',
         context={
@@ -409,10 +398,6 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                     },
                 })
         cls._error_messages.update({
-                'invoice_shipment_forbidden': ('You can not configure '
-                    'Milestone Group "%(milestone_group)s" to "Invoice '
-                    'Shipments" because it is related to Sale "%(sale)s" '
-                    'which invoice method is Order.'),
                 'group_with_pending_milestones': (
                     'The Milestone Group "%s" has some pending milestones.\n'
                     'Please, process or cancel all milestones before close '
@@ -592,21 +577,6 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             if fname not in names:
                 del res[fname]
         return res
-
-    @classmethod
-    def validate(cls, milestone_groups):
-        super(AccountInvoiceMilestoneGroup, cls).validate(milestone_groups)
-        for milestone_group in milestone_groups:
-            milestone_group.check_invoice_method()
-
-    def check_invoice_method(self):
-        if self.invoice_shipments:
-            for sale in self.sales:
-                if sale.invoice_method == 'order':
-                    self.raise_user_error('invoice_shipment_forbidden', {
-                            'milestone_group': self.rec_name,
-                            'sale': sale.rec_name,
-                            })
 
     @property
     def invoiced_advancement_amount(self):
@@ -1271,7 +1241,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 else 'out_invoice')
             inv_line_desc = self.calc_invoice_line_description(
                 [sale_line.sale])
-            with Transaction().set_context(invoicing_from_milestone=True,
+            with Transaction().set_context(
                     milestone_invoice_line_description=inv_line_desc):
                 invoice_lines += sale_line.get_invoice_line(invoice_type)
             sale_line.moves = old_sale_line_moves

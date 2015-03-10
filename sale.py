@@ -72,12 +72,6 @@ class Sale:
             invoice_state = 'waiting'
         return invoice_state
 
-    def check_method(self):
-        super(Sale, self).check_method()
-        if (self.milestone_group and self.milestone_group.invoice_shipments
-                and self.invoice_method == 'order'):
-            self.raise_user_error('invalid_method', (self.rec_name,))
-
     @classmethod
     def confirm(cls, sales):
         pool = Pool()
@@ -115,55 +109,9 @@ class Sale:
             group.check_trigger_condition(group_sales)
 
     def create_invoice(self, invoice_type):
-        pool = Pool()
-        Invoice = pool.get('account.invoice')
-        Milestone = pool.get('account.invoice.milestone')
-
-        if self.milestone_group and not self.milestone_group.invoice_shipments:
+        if self.milestone_group:
             return
-
-        invoice = super(Sale, self).create_invoice(invoice_type)
-
-        if (invoice and self.milestone_group and
-                self.milestone_group.invoice_shipments):
-            milestone = self._get_invoice_milestone(invoice)
-            if milestone:
-                milestone.save()
-
-                if invoice_type == 'out_invoice':
-                    invoice_line = milestone.get_compensation_line(
-                        invoice.untaxed_amount)
-                    if invoice_line:
-                        invoice.lines = invoice.lines + (invoice_line, )
-                        invoice.save()
-                        Invoice.update_taxes([invoice])
-
-                Milestone.confirm([milestone])
-                Milestone.proceed([milestone])
-        return invoice
-
-    def _get_invoice_milestone(self, invoice):
-        'Returns a milestone for the current sale and invoice'
-        pool = Pool()
-        Date = pool.get('ir.date')
-        Milestone = pool.get('account.invoice.milestone')
-        assert self.milestone_group
-
-        stock_moves = []
-        for line in invoice.lines:
-            stock_moves.extend(line.stock_moves)
-        if not stock_moves:
-            return
-
-        milestone = Milestone()
-        milestone.group = self.milestone_group
-        # milestone.description =
-        milestone.kind = 'manual'
-        milestone.invoice_method = 'shipped_goods'
-        milestone.moves_to_invoice = stock_moves
-        milestone.planned_invoice_date = Date.today()
-        milestone.invoice = invoice
-        return milestone
+        return super(Sale, self).create_invoice(invoice_type)
 
     @classmethod
     def write(cls, *args):
@@ -207,29 +155,18 @@ class SaleLine:
             * self.unit_price)
 
     def get_invoice_line(self, invoice_type):
-        context = Transaction().context
-
-        old_line_moves = None
-        if (self.sale.milestone_group
-                and self.sale.milestone_group.invoice_shipments
-                and not context.get('invoicing_from_milestone')):
-            # Don't invoice moves that are in some milestone
-            old_line_moves = self.moves
-            self.moves = [m for m in self.moves if not m.milestone]
-
         res = super(SaleLine, self).get_invoice_line(invoice_type)
-        if context.get('milestone_invoice_line_description'):
-            for l in res:
-                l.description = context['milestone_invoice_line_description']
 
-        if old_line_moves is not None:
-            self.moves = old_line_moves
+        line_description = (
+            Transaction().context.get('milestone_invoice_line_description'))
+        if line_description:
+            for l in res:
+                l.description = line_description
         return res
 
     def get_move(self, shipment_type):
         move = super(SaleLine, self).get_move(shipment_type)
-        if (move and self.sale.milestone_group
-                and not self.sale.milestone_group.invoice_shipments):
+        if move and self.sale.milestone_group:
             if self.moves:
                 milestones = list(set(m.milestone for m in self.moves
                         if m.milestone))
