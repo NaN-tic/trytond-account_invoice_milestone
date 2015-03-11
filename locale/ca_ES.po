@@ -42,18 +42,6 @@ msgstr ""
 "No hi ha cap seqüencia de fites definida. Si us plau, definiu-n'hi una a la "
 "configuració comptable."
 
-msgctxt "error:account.invoice.milestone.type:"
-msgid "Day of month must be between 1 and 31."
-msgstr "El dia del mes ha d'estar entre 1 i 31."
-
-msgctxt "error:account.invoice.milestone.type:"
-msgid "Percentage must to be between 0 and 100.0"
-msgstr "El percentatge ha de ser entre 0 i 100.0"
-
-msgctxt "error:account.invoice.milestone.type:"
-msgid "Trigger Percentage must to be between 0 and 100.0"
-msgstr "El percentatge del disparador ha de ser entre 0 i 100.0"
-
 msgctxt "error:account.invoice.milestone:"
 msgid ""
 "An advancement product must be defined in order to generate advancement invoices.\n"
@@ -61,10 +49,6 @@ msgid ""
 msgstr ""
 "El producte d'avançaments s'ha de definir per poder generar factures d'avançaments.\n"
 "Si us plau, defineix-lo a la configuració de la comptabilitat."
-
-msgctxt "error:account.invoice.milestone:"
-msgid "Day of month must be between 1 and 31."
-msgstr "El dia del mes ha d'estar entre 1 i 31."
 
 msgctxt "error:account.invoice.milestone:"
 msgid ""
@@ -81,10 +65,6 @@ msgid ""
 msgstr ""
 "No hi ha cap seqüencia de fites definida. Si us plau, definiu-n'hi una a la "
 "configuració comptable."
-
-msgctxt "error:account.invoice.milestone:"
-msgid "Trigger Percentage must to be between 0 and 100.0"
-msgstr "El percentatge del disparador ha de ser entre 0 i 100.0"
 
 msgctxt "error:account.invoice.milestone:"
 msgid ""
@@ -234,10 +214,6 @@ msgctxt "field:account.invoice.milestone,group:"
 msgid "Milestone Group"
 msgstr "Grup de fites"
 
-msgctxt "field:account.invoice.milestone,group_sales_moves:"
-msgid "Group Sales Moves"
-msgstr "Moviments vendes del grup"
-
 msgctxt "field:account.invoice.milestone,id:"
 msgid "ID"
 msgstr "Identificador"
@@ -262,10 +238,6 @@ msgctxt "field:account.invoice.milestone,months:"
 msgid "Number of Months"
 msgstr "Número de mesos"
 
-msgctxt "field:account.invoice.milestone,sale_lines_to_invoice:"
-msgid "Sale Lines to Invoice"
-msgstr "Línies a facturar"
-
 msgctxt "field:account.invoice.milestone,party:"
 msgid "Party"
 msgstr "Tercer"
@@ -282,6 +254,10 @@ msgctxt "field:account.invoice.milestone,rec_name:"
 msgid "Name"
 msgstr "Nom"
 
+msgctxt "field:account.invoice.milestone,sale_lines_to_invoice:"
+msgid "Sale Lines to Invoice"
+msgstr "Línies a facturar"
+
 msgctxt "field:account.invoice.milestone,sales_to_invoice:"
 msgid "Sales to Invoice"
 msgstr "Vendes a facturar"
@@ -289,6 +265,10 @@ msgstr "Vendes a facturar"
 msgctxt "field:account.invoice.milestone,state:"
 msgid "State"
 msgstr "Estat"
+
+msgctxt "field:account.invoice.milestone,trigger:"
+msgid "Trigger"
+msgstr "Disparador"
 
 msgctxt "field:account.invoice.milestone,trigger_lines:"
 msgid "Trigger Lines"
@@ -346,35 +326,67 @@ msgctxt "field:account.invoice.milestone-remainder-sale.sale,write_uid:"
 msgid "Write User"
 msgstr "Usuari modificació"
 
-msgctxt "field:account.invoice.milestone-sale.line,create_date:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,create_date:"
 msgid "Create Date"
 msgstr "Data creació"
 
-msgctxt "field:account.invoice.milestone-sale.line,create_uid:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,create_uid:"
 msgid "Create User"
 msgstr "Usuari creació"
 
-msgctxt "field:account.invoice.milestone-sale.line,id:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,id:"
 msgid "ID"
 msgstr "Identificador"
 
-msgctxt "field:account.invoice.milestone-sale.line,milestone:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,milestone:"
 msgid "Account Invoice Milestone"
 msgstr "Fita de facturació"
 
-msgctxt "field:account.invoice.milestone-sale.line,rec_name:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,rec_name:"
 msgid "Name"
 msgstr "Nom"
 
-msgctxt "field:account.invoice.milestone-sale.line,sale_line:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,sale_line:"
 msgid "Sale Line"
 msgstr "Línia de venta"
 
-msgctxt "field:account.invoice.milestone-sale.line,write_date:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,write_date:"
 msgid "Write Date"
 msgstr "Data modificación"
 
-msgctxt "field:account.invoice.milestone-sale.line,write_uid:"
+msgctxt "field:account.invoice.milestone-to_invoice-sale.line,write_uid:"
+msgid "Write User"
+msgstr "Usuari modificació"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,create_date:"
+msgid "Create Date"
+msgstr "Data creació"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,create_uid:"
+msgid "Create User"
+msgstr "Usuari creació"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,id:"
+msgid "ID"
+msgstr "Identificador"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,milestone:"
+msgid "Account Invoice Milestone"
+msgstr "Fita de facturació"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,rec_name:"
+msgid "Name"
+msgstr "Nom"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,sale_line:"
+msgid "Sale Line"
+msgstr "Línia de venta"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,write_date:"
+msgid "Write Date"
+msgstr "Data modificación"
+
+msgctxt "field:account.invoice.milestone-trigger-sale.line,write_uid:"
 msgid "Write User"
 msgstr "Usuari modificació"
 
@@ -590,6 +602,18 @@ msgctxt "field:account.invoice.milestone.type,write_uid:"
 msgid "Write User"
 msgstr "Usuari modificació"
 
+msgctxt "field:sale.line,invoice_method:"
+msgid "Invoice Method"
+msgstr "Mètode de facturació"
+
+msgctxt "field:sale.line,milestones:"
+msgid "Milestones"
+msgstr "Fites"
+
+msgctxt "field:sale.line,quantity_to_invoice:"
+msgid "Quantity to invoice"
+msgstr "Quantitat a facturar"
+
 msgctxt "field:sale.sale,advancement_invoices:"
 msgid "Advancement Invoices"
 msgstr "Factures d'avançament"
@@ -606,10 +630,6 @@ msgctxt "field:sale.sale,remainder_milestones:"
 msgid "Remainder Milestones"
 msgstr "Fites romanent"
 
-msgctxt "field:stock.move,milestone:"
-msgid "Milestone"
-msgstr "Fita"
-
 msgctxt "help:account.invoice.milestone,description:"
 msgid ""
 "It will be used to prepare the description field of invoice lines.\n"
@@ -617,6 +637,14 @@ msgid ""
 msgstr ""
 "S'utilitzarà per preparar el camp de descripció de les línies de factura.\n"
 "Pot utilitzar les següents etiquetes i es reemplaçaran pels camps corresponents de les vendes relacionades a la fita: {sale_description}, {sale_reference}."
+
+msgctxt "help:account.invoice.milestone,trigger:"
+msgid ""
+"Defines when the Milestone will be confirmed and its Planned Invoice Date "
+"calculated."
+msgstr ""
+"Defineix quan es confirmarà la fita i es calcularà la seva Data de "
+"facturació planificada"
 
 msgctxt "help:account.invoice.milestone,trigger_shipped_amount:"
 msgid ""
@@ -682,9 +710,13 @@ msgctxt "model:account.invoice.milestone-remainder-sale.sale,name:"
 msgid "Account Invoice Milestone - Remainder - Sale"
 msgstr "Fita de facturació - Romanent - Venda"
 
-msgctxt "model:account.invoice.milestone-sale.line,name:"
-msgid "Account Invoice Milestone - Sale Line"
-msgstr "Fita de facturació - Línia de venda"
+msgctxt "model:account.invoice.milestone-to_invoice-sale.line,name:"
+msgid "Account Invoice Milestone - To Invoice - Sale Line"
+msgstr "Fita facturació - A facturar - Línia de venda"
+
+msgctxt "model:account.invoice.milestone-trigger-sale.line,name:"
+msgid "Account Invoice Milestone - Trigger - Sale Line"
+msgstr "Fita facturació - Disparador - Línia de venda"
 
 msgctxt "model:account.invoice.milestone.group,name:"
 msgid "Account Invoice Milestone Group"
@@ -801,6 +833,10 @@ msgid "Remainder"
 msgstr "Romanent"
 
 msgctxt "selection:account.invoice.milestone,invoice_method:"
+msgid "Sale Lines"
+msgstr "Línies de venda"
+
+msgctxt "selection:account.invoice.milestone,invoice_method:"
 msgid "Shipped Goods"
 msgstr "Bens entregats"
 
@@ -888,6 +924,22 @@ msgctxt "selection:account.invoice.milestone,state:"
 msgid "Succeeded"
 msgstr "Amb èxit"
 
+msgctxt "selection:account.invoice.milestone,trigger:"
+msgid ""
+msgstr ""
+
+msgctxt "selection:account.invoice.milestone,trigger:"
+msgid "On % sent"
+msgstr "Al enviar un %"
+
+msgctxt "selection:account.invoice.milestone,trigger:"
+msgid "On Order Confirmed"
+msgstr "Al confirmar la comanda"
+
+msgctxt "selection:account.invoice.milestone,trigger:"
+msgid "On Order Fully Sent"
+msgstr "Al enviar completament la venda"
+
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid ""
 msgstr ""
@@ -947,6 +999,10 @@ msgstr "Percentatge sobre total"
 msgctxt "selection:account.invoice.milestone.type,invoice_method:"
 msgid "Remainder"
 msgstr "Romanent"
+
+msgctxt "selection:account.invoice.milestone.type,invoice_method:"
+msgid "Sale Lines"
+msgstr "Línies de venda"
 
 msgctxt "selection:account.invoice.milestone.type,invoice_method:"
 msgid "Shipped Goods"
@@ -1021,12 +1077,12 @@ msgid "On % sent"
 msgstr "Al enviar un %"
 
 msgctxt "selection:account.invoice.milestone.type,trigger:"
-msgid "On Order Accepted"
-msgstr "Al accepta la comanda"
+msgid "On Order Confirmed"
+msgstr "Al confirmar la comanda"
 
 msgctxt "selection:account.invoice.milestone.type,trigger:"
-msgid "On Order Finished"
-msgstr "Al finalitzar la comanda"
+msgid "On Order Fully Sent"
+msgstr "Al enviar completament la venda"
 
 msgctxt "selection:account.invoice.milestone.type,weekday:"
 msgid ""
@@ -1059,14 +1115,6 @@ msgstr "Dimarts"
 msgctxt "selection:account.invoice.milestone.type,weekday:"
 msgid "Wednesday"
 msgstr "Dimecres"
-
-msgctxt "selection:sale.configuration,sale_invoice_method:"
-msgid "Based on Milestones"
-msgstr "Basat en fites"
-
-msgctxt "selection:sale.sale,invoice_method:"
-msgid "Based on Milestones"
-msgstr "Basat en fites"
 
 msgctxt "view:account.invoice.milestone.group.type:"
 msgid "Milestone Group Type"
