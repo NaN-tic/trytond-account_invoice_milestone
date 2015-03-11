@@ -23,9 +23,9 @@ _KIND = [
     ]
 _TRIGGER = [
     ('', ''),
-    ('accept', 'On Order Accepted'),
-    ('percentage', 'On % sent'),
-    ('finish', 'On Order Finished'),
+    ('confirmed_sale', 'On Order Confirmed'),
+    ('shipped_amount', 'On % sent'),
+    ('sent_sale', 'On Order Fully Sent'),
     ]
 
 
@@ -118,9 +118,9 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     trigger_shipped_amount = fields.Numeric('On Shipped Amount',
         digits=(16, 8), states={
             'required': ((Eval('kind') == 'system')
-                & (Eval('trigger') == 'percentage')),
+                & (Eval('trigger') == 'shipped_amount')),
             'invisible': ((Eval('kind') != 'system')
-                | (Eval('trigger') != 'percentage')),
+                | (Eval('trigger') != 'shipped_amount')),
             }, depends=['kind', 'trigger'],
         help="The percentage of sent amount over the total amount of "
         "Milestone's Trigger Sale Lines.\n"
@@ -196,7 +196,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             ('trigger_shipped_amount',
                 ('CHECK(trigger_shipped_amount IS NULL '
                     'OR trigger_shipped_amount BETWEEN 0.0 AND 1.0)'),
-                'Trigger Percentage must to be between 0 and 100.0'),
+                'Shipped Amount percentage must to be between 0 and 100.0'),
             ('percentage',
                 ('CHECK(percentage IS NULL '
                     'OR percentage BETWEEN 0.0 AND 1.0)'),
@@ -625,17 +625,17 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             if (milestone.state != 'confirmed' or milestone.kind == 'manual'
                     or milestone.invoice):
                 continue
-            if milestone.trigger == 'accept':
-                # Milestones on order accepted
+            if milestone.trigger == 'confirmed_sale':
+                # Milestones on order confirmed
                 if all(l.sale in sales_from for l in milestone.trigger_lines):
                     todo.append(milestone)
-            elif milestone.trigger == 'finish':
+            elif milestone.trigger == 'sent_sale':
                 # Milestones on order done
                 if all((l.sale in sales_from
                             and l.sale.shipment_state == 'sent')
                         for l in milestone.trigger_lines):
                     todo.append(milestone)
-            # trigger == 'percentage'
+            # trigger == 'shipped_amount'
             elif milestone.trigger_shipped_amount == _ZERO:
                 if all((l.sale in sales_from
                             and l.sale.state in ('processing', 'done'))
@@ -807,9 +807,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         digits=(16, 8), states={
             'readonly': Eval('state') != 'draft',
             'required': ((Eval('kind') == 'system')
-                & (Eval('trigger') == 'percentage')),
+                & (Eval('trigger') == 'shipped_amount')),
             'invisible': ((Eval('kind') != 'system')
-                | (Eval('trigger') != 'percentage')),
+                | (Eval('trigger') != 'shipped_amount')),
             },
         depends=['state', 'party', 'invoice_method', 'kind'],
         help="The percentage of sent amount over the total amount of "
@@ -928,7 +928,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             ('trigger_shipped_amount',
                 ('CHECK(trigger_shipped_amount IS NULL '
                     'OR trigger_shipped_amount BETWEEN 0.0 AND 1.0)'),
-                'Trigger Percentage must to be between 0 and 100.0'),
+                'Shipped Amount percentage must to be between 0 and 100.0'),
             ('day', 'CHECK(day BETWEEN 1 AND 31)',
                 'Day of month must be between 1 and 31.'),
             ]
