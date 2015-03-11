@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from trytond.model import Workflow, ModelView, ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
-from trytond.pyson import Bool, Eval
+from trytond.pyson import Bool, Eval, If
 from trytond.transaction import Transaction
 
 __all__ = ['AccountInvoiceMilestoneGroupType', 'AccountInvoiceMilestoneType',
@@ -116,7 +116,16 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
         help='Defines when the Milestone will be confirmed and its Planned '
         'Invoice Date calculated.')
     trigger_shipped_amount = fields.Numeric('On Shipped Amount',
-        digits=(16, 8), states={
+        digits=(16, 8),
+        domain=[
+            ['OR', [
+                ('trigger_shipped_amount', '=', None),
+                ], [
+                ('trigger_shipped_amount', '>=', 0),
+                ('trigger_shipped_amount', '<=', 1),
+                ]],
+            ],
+        states={
             'required': ((Eval('kind') == 'system')
                 & (Eval('trigger') == 'shipped_amount')),
             'invisible': ((Eval('kind') != 'system')
@@ -133,7 +142,12 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             ('sale_lines', 'Sale Lines'),
             ('shipped_goods', 'Shipped Goods'),
             ('remainder', 'Remainder'),
-            ], 'Invoice Method', required=True, sort=False)
+            ], 'Invoice Method', required=True, sort=False,
+        domain=[
+            If(Eval('trigger', '') == 'confirmed_sale',
+                ('invoice_method', 'in', ['fixed', 'percent_on_total']),
+                ('invoice_method', '!=', None)),
+            ], depends=['trigger'])
     amount = fields.Numeric('Amount', digits=(16, Eval('currency_digits', 2)),
         states={
             'required': Eval('invoice_method', '') == 'fixed',
@@ -147,6 +161,14 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     currency_digits = fields.Function(fields.Integer('Currency Digits'),
         'on_change_with_currency_digits')
     percentage = fields.Numeric('Percentage', digits=(16, 8),
+        domain=[
+            ['OR', [
+                ('percentage', '=', None),
+                ], [
+                ('percentage', '>=', 0),
+                ('percentage', '<=', 1),
+                ]],
+            ],
         states={
             'required': Eval('invoice_method', '') == 'percent_on_total',
             'invisible': Eval('invoice_method', '') != 'percent_on_total',
@@ -158,7 +180,14 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             }, depends=['invoice_method']),
         'on_change_with_divisor', setter='set_divisor')
 
-    day = fields.Integer('Day of Month')
+    day = fields.Integer('Day of Month', domain=[
+            ['OR', [
+                ('day', '=', None),
+                ], [
+                ('day', '>=', 1),
+                ('day', '<=', 31),
+                ]],
+            ])
     month = fields.Selection([
             (None, ''),
             ('1', 'January'),
@@ -192,23 +221,20 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     def __setup__(cls):
         super(AccountInvoiceMilestoneType, cls).__setup__()
         cls._order.insert(0, ('sequence', 'ASC'))
-        cls._sql_constraints += [
-            ('trigger_shipped_amount',
-                ('CHECK(trigger_shipped_amount IS NULL '
-                    'OR trigger_shipped_amount BETWEEN 0.0 AND 1.0)'),
-                'Shipped Amount percentage must to be between 0 and 100.0'),
-            ('percentage',
-                ('CHECK(percentage IS NULL '
-                    'OR percentage BETWEEN 0.0 AND 1.0)'),
-                'Percentage must to be between 0 and 100.0'),
-            ('day', 'CHECK(day BETWEEN 1 AND 31)',
-                'Day of month must be between 1 and 31.'),
-            ]
 
     @staticmethod
     def order_sequence(tables):
         table, _ = tables[None]
         return [table.sequence == None, table.sequence]
+
+    @fields.depends('trigger', 'invoice_method')
+    def on_change_trigger(self):
+        if (self.trigger == 'confirmed_sale'
+                and self.invoice_method not in ('fixed', 'percent_on_total')):
+            return {
+                'invoice_method': 'fixed',
+                }
+        return {}
 
     @staticmethod
     def default_currency_digits():
@@ -804,7 +830,16 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         help='Defines when the Milestone will be confirmed and its Planned '
         'Invoice Date calculated.')
     trigger_shipped_amount = fields.Numeric('On Shipped Amount',
-        digits=(16, 8), states={
+        digits=(16, 8),
+        domain=[
+            ['OR', [
+                ('trigger_shipped_amount', '=', None),
+                ], [
+                ('trigger_shipped_amount', '>=', 0),
+                ('trigger_shipped_amount', '<=', 1),
+                ]],
+            ],
+        states={
             'readonly': Eval('state') != 'draft',
             'required': ((Eval('kind') == 'system')
                 & (Eval('trigger') == 'shipped_amount')),
@@ -834,7 +869,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             ('sale_lines', 'Sale Lines'),
             ('remainder', 'Remainder'),
             ], 'Invoice Method', required=True, select=True, sort=False,
-        states=_STATES, depends=_DEPENDS)
+        domain=[
+            If(Eval('trigger', '') == 'confirmed_sale',
+                ('invoice_method', '=', 'amount'),
+                ('invoice_method', '!=', None)),
+            ],
+        states=_STATES, depends=_DEPENDS + ['trigger'])
     amount = fields.Numeric('Amount', digits=(16, Eval('currency_digits', 2)),
         states={
             'readonly': Eval('state') != 'draft',
@@ -870,8 +910,15 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             },
         depends=['group', 'state', 'invoice_method'])
 
-    day = fields.Integer('Day of Month', states=_STATES_INV_DATE_CALC,
-        depends=_DEPENDS_INV_DATE_CALC)
+    day = fields.Integer('Day of Month', domain=[
+            ['OR', [
+                ('day', '=', None),
+                ], [
+                ('day', '>=', 1),
+                ('day', '<=', 31),
+                ]],
+            ],
+        states=_STATES_INV_DATE_CALC, depends=_DEPENDS_INV_DATE_CALC)
     month = fields.Selection([
             (None, ''),
             ('1', 'January'),
@@ -924,14 +971,6 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     @classmethod
     def __setup__(cls):
         super(AccountInvoiceMilestone, cls).__setup__()
-        cls._sql_constraints += [
-            ('trigger_shipped_amount',
-                ('CHECK(trigger_shipped_amount IS NULL '
-                    'OR trigger_shipped_amount BETWEEN 0.0 AND 1.0)'),
-                'Shipped Amount percentage must to be between 0 and 100.0'),
-            ('day', 'CHECK(day BETWEEN 1 AND 31)',
-                'Day of month must be between 1 and 31.'),
-            ]
         cls._transitions |= set((
                 ('draft', 'confirmed'),
                 ('confirmed', 'processing'),
