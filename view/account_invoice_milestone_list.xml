@@ -7,6 +7,7 @@
     <field name="party"/>
     <field name="description" tree_invisible="1"/>
     <field name="kind"/>
+    <field name="trigger"/>
     <field name="trigger_shipped_amount" factor="100">
         <suffix string="%"/>
     </field>

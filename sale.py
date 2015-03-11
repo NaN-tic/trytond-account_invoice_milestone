@@ -5,6 +5,7 @@ from decimal import Decimal
 from trytond.model import fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Eval, Bool
+from trytond.rpc import RPC
 from trytond.transaction import Transaction
 
 __all__ = ['Sale', 'SaleLine']
@@ -17,7 +18,6 @@ class Sale:
     milestone_group_type = fields.Many2One(
         'account.invoice.milestone.group.type', 'Milestone Group Type',
         states={
-            # 'invisible': Eval('invoice_method') != 'milestone',
             'readonly': ~Eval('state').in_(['draft', 'quotation']),
             },
         depends=['state'])
@@ -28,9 +28,7 @@ class Sale:
             ('party', '=', Eval('party', -1)),
             ],
         states={
-            # 'invisible': Eval('invoice_method') != 'milestone',
             'required': ((~Eval('state', '').in_(['draft', 'cancel']))
-                # & (Eval('invoice_method') == 'milestone')
                 & ~Bool(Eval('milestone_group_type', 0))),
             'readonly': (~Bool(Eval('party', 0)) |
                 Bool(Eval('milestone_group_type')) |
@@ -114,6 +112,15 @@ class Sale:
         return super(Sale, self).create_invoice(invoice_type)
 
     @classmethod
+    def copy(cls, sales, default=None):
+        if default is None:
+            default = {}
+        else:
+            default = default.copy()
+        default.setdefault('remainder_milestones', [])
+        return super(Sale, cls).copy(sales, default=default)
+
+    @classmethod
     def write(cls, *args):
         actions = iter(args)
         args = []
@@ -139,8 +146,15 @@ class Sale:
 
 class SaleLine:
     __name__ = 'sale.line'
-    milestone = fields.Many2One('account.invoice.milestone', 'Milestone',
-        readonly=True)
+    milestones = fields.Many2Many(
+        'account.invoice.milestone-to_invoice-sale.line',
+        'sale_line', 'milestone', 'Milestones', readonly=True,
+        states={
+            'invisible': Eval('type', 'line') != 'line',
+            }, depends=['type'])
+    invoice_method = fields.Function(fields.Selection('get_invoice_methods',
+            'Invoice Method'),
+        'get_invoice_method')
     quantity_to_invoice = fields.Function(fields.Float('Quantity to invoice',
             digits=(16, Eval('unit_digits', 2)),
             states={
@@ -148,6 +162,22 @@ class SaleLine:
                 },
             depends=['type', 'unit_digits']),
         'get_quantity_to_invoice')
+
+    @classmethod
+    def __setup__(cls):
+        super(SaleLine, cls).__setup__()
+        cls.__rpc__.update({
+                'get_invoice_methods': RPC(),
+                })
+
+    @staticmethod
+    def get_invoice_methods():
+        Sale = Pool().get('sale.sale')
+        return Sale.invoice_method.selection
+
+    def get_invoice_method(self, name):
+        if self.sale:
+            return self.sale.invoice_method
 
     def get_quantity_to_invoice(self, name):
         pool = Pool()
@@ -181,6 +211,27 @@ class SaleLine:
         return Uom.round(quantity, rounding)
 
     @property
+    def quantity_to_ship(self):
+        pool = Pool()
+        Uom = pool.get('product.uom')
+
+        if self.sale.shipment_method == 'order':
+            quantity = abs(self.quantity)
+        else:
+            quantity = 0.0
+            for invoice_line in self.invoice_lines:
+                if invoice_line.invoice.state == 'paid':
+                    quantity += Uom.compute_qty(invoice_line.unit,
+                        invoice_line.quantity, self.unit)
+
+        ignored_ids = set(x.id for x in self.moves_ignored)
+        for move in self.moves:
+            if move.state == 'done' or move.id in ignored_ids:
+                quantity -= Uom.compute_qty(move.uom, move.quantity,
+                    self.unit)
+        return Uom.round(quantity, self.unit.rounding)
+
+    @property
     def shipped_amount(self):
         'The quantity from linked done moves in line unit'
         pool = Pool()
@@ -205,23 +256,10 @@ class SaleLine:
         return res
 
     @classmethod
-    def write(cls, *args):
-        pool = Pool()
-        Milestone = pool.get('account.invoice.milestone')
-
-        actions = iter(args)
-        sale_lines_to_check = []
-        for records, values in zip(actions, actions):
-            for action, moves_ignored in values.get('moves_ignored', []):
-                if action == 'add' and moves_ignored:
-                    sale_lines_to_check += [r.id for r in records
-                        if r.milestone]
-        super(SaleLine, cls).write(*args)
-
-        if sale_lines_to_check:
-            milestones_to_cancel = set()
-            for sale_line in cls.browse(list(set(sale_lines_to_check))):
-                if sale_line.quantity_to_invoice <= 0:
-                    milestones_to_cancel.add(sale_line.milestone)
-            if milestones_to_cancel:
-                Milestone.cancel(list(milestones_to_cancel))
+    def copy(cls, lines, default=None):
+        if default is None:
+            default = {}
+        else:
+            default = default.copy()
+        default.setdefault('milestones', [])
+        return super(SaleLine, cls).copy(lines, default=default)

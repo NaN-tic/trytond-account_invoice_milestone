@@ -3,6 +3,7 @@
      copyright notices and license terms. -->
 <data>
     <xpath expr="/tree/field[@name='quantity']" position="after">
+        <field name="invoice_method"/>
         <field name="quantity_to_invoice"/>
     </xpath>
 </data>

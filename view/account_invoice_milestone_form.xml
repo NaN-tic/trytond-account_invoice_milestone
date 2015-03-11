@@ -16,6 +16,8 @@
     <field name="kind"/>
     <separator id="trigger" string="Trigger" colspan="4"
         states="{'invisible': Eval('kind') != 'system'}"/>
+    <label name="trigger"/>
+    <field name="trigger"/>
     <label name="trigger_shipped_amount"/>
     <group col="2" id="trigger_shipped_amount">
         <field name="trigger_shipped_amount" factor="100" xexpand="0"/>

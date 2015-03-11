@@ -5,12 +5,14 @@ from decimal import Decimal
 
 from trytond.model import Workflow, ModelView, ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
-from trytond.pyson import If, Eval, Bool
+from trytond.pyson import Bool, Eval
 from trytond.transaction import Transaction
 
 __all__ = ['AccountInvoiceMilestoneGroupType', 'AccountInvoiceMilestoneType',
     'AccountInvoiceMilestoneGroup', 'AccountInvoiceMilestone',
-    'AccountInvoiceMilestoneSaleLine', 'AccountInvoiceMilestoneRemainderSale']
+    'AccountInvoiceMilestoneTriggerSaleLine',
+    'AccountInvoiceMilestoneToInvoiceSaleLine',
+    'AccountInvoiceMilestoneRemainderSale']
 __metaclass__ = PoolMeta
 
 
@@ -18,6 +20,12 @@ _ZERO = Decimal('0.0')
 _KIND = [
     ('manual', 'Manual'),
     ('system', 'System'),
+    ]
+_TRIGGER = [
+    ('', ''),
+    ('accept', 'On Order Accepted'),
+    ('percentage', 'On % sent'),
+    ('finish', 'On Order Finished'),
     ]
 
 
@@ -100,12 +108,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     sequence = fields.Integer('Sequence',
         help='Use to order lines in ascending order')
     kind = fields.Selection(_KIND, 'Kind', required=True, select=True)
-    trigger = fields.Selection([
-            ('', ''),
-            ('accept', 'On Order Accepted'),
-            ('finish', 'On Order Finished'),
-            ('percentage', 'On % sent'),
-            ], 'Trigger', sort=False,
+    trigger = fields.Selection(_TRIGGER, 'Trigger', sort=False,
         states={
             'required': Eval('kind') == 'system',
             'invisible': Eval('kind') != 'system',
@@ -127,6 +130,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     invoice_method = fields.Selection([
             ('fixed', 'Fixed'),
             ('percent_on_total', 'Percentage on Total'),
+            ('sale_lines', 'Sale Lines'),
             ('shipped_goods', 'Shipped Goods'),
             ('remainder', 'Remainder'),
             ], 'Invoice Method', required=True, sort=False)
@@ -276,12 +280,8 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
         # milestone.description = ??
         milestone.kind = self.kind
         if self.kind == 'system':
-            if self.trigger == 'accept':
-                milestone.trigger_shipped_amount = _ZERO
-            elif self.trigger == 'finish':
-                milestone.trigger_shipped_amount = Decimal('1.0')
-            else:
-                milestone.trigger_shipped_amount = self.trigger_shipped_amount
+            milestone.trigger = self.trigger
+            milestone.trigger_shipped_amount = self.trigger_shipped_amount
             milestone.trigger_lines = list(sale.lines)
 
         if self.invoice_method in ('fixed', 'percent_on_total'):
@@ -294,7 +294,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
                     sale.untaxed_amount * self.percentage)
         else:
             milestone.invoice_method = self.invoice_method
-            if self.invoice_method == 'shipped_goods':
+            if self.invoice_method in ('shipped_goods', 'sale_lines'):
                 milestone.sale_lines_to_invoice = [l for l in sale.lines
                     if l.type == 'line']
             elif self.invoice_method == 'remainder':
@@ -448,7 +448,8 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             if milestone.state in ('failed', 'cancel'):
                 continue
             if (milestone.state in ('draft', 'confirmed')
-                    and ((milestone.invoice_method == 'shipped_goods'
+                    and ((milestone.invoice_method
+                                in ('shipped_goods', 'sale_lines')
                             and not milestone.sale_lines_to_invoice)
                         or (milestone.invoice_method == 'remainder'
                             and not milestone.sales_to_invoice))):
@@ -493,6 +494,18 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         Uom = pool.get('product.uom')
         SaleLine = pool.get('sale.line')
 
+        def get_ignored_moves_amount(sale_line):
+            ignored_amount = Decimal('0')
+            for ignored_move in sale_line.moves_ignored:
+                sign = (Decimal('1')
+                    if ignored_move.to_location.type == 'customer'
+                    else Decimal('-1'))
+                move_qty = Uom.compute_qty(ignored_move.uom,
+                    ignored_move.quantity, ignored_move.origin.unit)
+                ignored_amount += (Decimal(str(move_qty))
+                    * ignored_move.unit_price * sign)
+            return ignored_amount
+
         names_set = set(names)
         sales_in_live_remainders = []
         res = {}.fromkeys(['total_amount', 'merited_amount',
@@ -512,14 +525,8 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             # skip_inv_line_ids = set(l.id for i in sale.invoices_recreated
             #     for l in i.lines)
             for sale_line in sale.lines:
-                for ignored_move in sale_line.moves_ignored:
-                    sign = (Decimal('1.0')
-                        if ignored_move.to_location.type == 'customer'
-                        else Decimal('-1.0'))
-                    move_qty = Uom.compute_qty(ignored_move.uom,
-                        ignored_move.quantity, ignored_move.origin.unit)
-                    res['total_amount'] -= (Decimal(str(move_qty))
-                                * ignored_move.unit_price * sign)
+                if sale.invoice_method == 'shipment':
+                    res['total_amount'] -= get_ignored_moves_amount(sale_line)
                 if (sale_line.product
                         and sale_line.product.type != 'service'):
                     res['merited_amount'] += sale_line.shipped_amount
@@ -528,6 +535,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
 
         if {'amount_to_assign', 'assigned_amount', 'invoiced_amount',
                 'amount_to_invoice'} & names_set:
+            assigned_sale_lines = []
             for milestone in self.milestones:
                 if milestone.state in ('draft', 'failed', 'cancel'):
                     continue
@@ -555,25 +563,22 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                             res['assigned_amount'] += inv_line.amount * sign
 
                 if ({'amount_to_assign', 'assigned_amount'} & names_set
-                        and milestone.invoice_method == 'shipped_goods'):
+                        and milestone.invoice_method
+                        in ('shipped_goods', 'sale_lines')):
                     for sale_line in milestone.sale_lines_to_invoice:
-                        for move in sale_line.moves:
-                            if (move.state != 'cancel'
-                                    and move not in sale_line.moves_ignored
-                                    and move not in sale_line.moves_recreated):
-                                sign = (Decimal('1.0')
-                                    if move.to_location.type == 'customer'
-                                    else Decimal('-1.0'))
-                                move_qty = Uom.compute_qty(move.uom,
-                                    move.quantity, sale_line.unit)
-                                res['assigned_amount'] += (
-                                    Decimal(str(move_qty))
-                                    * move.unit_price
-                                    * sign)
+                        if (sale_line.id in assigned_sale_lines or
+                                sale_line.sale.id in sales_in_live_remainders):
+                            continue
+                        assigned_sale_lines.append(sale_line.id)
+                        if sale_line.sale.invoice_method == 'shipment':
+                            res['assigned_amount'] += (sale_line.amount
+                                - get_ignored_moves_amount(sale_line))
+                        else:
+                            res['assigned_amount'] += sale_line.amount
 
         if 'amount_to_invoice' in names:
-            res['amount_to_invoice'] = (res['total_amount']
-                - res['invoiced_amount'])
+            res['amount_to_invoice'] = max(Decimal('0'),
+                res['total_amount'] - res['invoiced_amount'])
         if 'amount_to_assign' in names:
             res['amount_to_assign'] = (res['total_amount']
                 - res['assigned_amount'])
@@ -620,9 +625,21 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             if (milestone.state != 'confirmed' or milestone.kind == 'manual'
                     or milestone.invoice):
                 continue
-            if milestone.trigger_shipped_amount == _ZERO:
+            if milestone.trigger == 'accept':
                 # Milestones on order accepted
                 if all(l.sale in sales_from for l in milestone.trigger_lines):
+                    todo.append(milestone)
+            elif milestone.trigger == 'finish':
+                # Milestones on order done
+                if all((l.sale in sales_from
+                            and l.sale.shipment_state == 'sent')
+                        for l in milestone.trigger_lines):
+                    todo.append(milestone)
+            # trigger == 'percentage'
+            elif milestone.trigger_shipped_amount == _ZERO:
+                if all((l.sale in sales_from
+                            and l.sale.state in ('processing', 'done'))
+                        for l in milestone.trigger_lines):
                     todo.append(milestone)
             elif milestone.trigger_shipped_amount == Decimal('1.0'):
                 # Milestones on order sent
@@ -646,7 +663,9 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                     Milestone.trigger_shipped_amount.digits[1])
                 if shipped_percentage >= milestone.trigger_shipped_amount:
                     todo.append(milestone)
-        Milestone.do_invoice(todo)
+
+        if todo:
+            Milestone.do_invoice(todo)
 
     @classmethod
     @ModelView.button
@@ -694,7 +713,9 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             default = {}
         default.setdefault('code', None)
         default['sales'] = None
-        return super(AccountInvoiceMilestoneGroup, cls).copy(groups, default)
+        with Transaction().set_context(milestone_group_copy=True):
+            return super(AccountInvoiceMilestoneGroup, cls).copy(groups,
+                default)
 
     @classmethod
     def create(cls, vlist):
@@ -774,24 +795,34 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
     kind = fields.Selection(_KIND, 'Kind', required=True, select=True,
         states=_STATES, depends=_DEPENDS)
+    trigger = fields.Selection(_TRIGGER, 'Trigger', sort=False,
+        states={
+            'readonly': Eval('state') != 'draft',
+            'required': Eval('kind') == 'system',
+            'invisible': Eval('kind') != 'system',
+            }, depends=['state', 'kind'],
+        help='Defines when the Milestone will be confirmed and its Planned '
+        'Invoice Date calculated.')
     trigger_shipped_amount = fields.Numeric('On Shipped Amount',
         digits=(16, 8), states={
             'readonly': Eval('state') != 'draft',
-            'required': Eval('kind') == 'system',
-            'invisible': Eval('kind') == 'manual',
+            'required': ((Eval('kind') == 'system')
+                & (Eval('trigger') == 'percentage')),
+            'invisible': ((Eval('kind') != 'system')
+                | (Eval('trigger') != 'percentage')),
             },
         depends=['state', 'party', 'invoice_method', 'kind'],
         help="The percentage of sent amount over the total amount of "
         "Milestone's Trigger Sale Lines.")
-    trigger_lines = fields.Many2Many('account.invoice.milestone-sale.line',
+    trigger_lines = fields.Many2Many(
+        'account.invoice.milestone-trigger-sale.line',
         'milestone', 'sale_line', 'Trigger Lines',
         domain=[
-            ('sale.milestone_group', '=', Eval('group', -1)),
             ('type', '=', 'line'),
+            ('sale.milestone_group', '=', Eval('group', -1)),
             ],
         states={
             'readonly': Eval('state') != 'draft',
-            'required': Eval('kind') == 'system',
             'required': ((Eval('state') == 'confirmed') &
                 (Eval('kind') == 'system')),
             'invisible': Eval('kind') == 'manual',
@@ -800,6 +831,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     invoice_method = fields.Selection([
             ('amount', 'Amount'),
             ('shipped_goods', 'Shipped Goods'),
+            ('sale_lines', 'Sale Lines'),
             ('remainder', 'Remainder'),
             ], 'Invoice Method', required=True, select=True, sort=False,
         states=_STATES, depends=_DEPENDS)
@@ -809,26 +841,21 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             'required': Eval('invoice_method') == 'amount',
             'invisible': Eval('invoice_method') != 'amount',
             }, depends=['currency_digits', 'state', 'invoice_method'])
-    sale_lines_to_invoice = fields.One2Many('sale.line', 'milestone',
-        'Sale Lines to Invoice', domain=[
+    sale_lines_to_invoice = fields.Many2Many(
+        'account.invoice.milestone-to_invoice-sale.line',
+        'milestone', 'sale_line', 'Sale Lines to Invoice',
+        domain=[
             ('type', '=', 'line'),
             ('sale.milestone_group', '=', Eval('group', -1)),
             # company domain is "inherit" from milestone_group
-            If(~Bool(Eval('invoice', 0)),
-                ('invoice_lines', '=', None),
-                ()),
-            ],
-        add_remove=[
-            ('milestone', '=', None),
-            ('state', '!=', 'cancel'),
             ],
         states={
             'readonly': ~Eval('state').in_(['draft', 'confirmed']),
             'required': ((Eval('state') == 'processing') &
-                (Eval('invoice_method') == 'shipped_goods')),
-            'invisible': Eval('invoice_method') != 'shipped_goods',
-            },
-        depends=['invoice', 'group', 'state', 'invoice_method'])
+                (Eval('invoice_method').in_(['shipped_goods', 'sale_lines']))),
+            'invisible': (
+                ~Eval('invoice_method').in_(['shipped_goods', 'sale_lines'])),
+            }, depends=['group', 'state', 'invoice_method'])
     sales_to_invoice = fields.Many2Many(
         'account.invoice.milestone-remainder-sale.sale', 'milestone', 'sale',
         'Sales to Invoice', domain=[
@@ -1004,7 +1031,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     def draft(cls, milestones):
         for milestone in milestones:
             if milestone.group.state in ('completed', 'paid'):
-                cls.raise_user_error('reset_milestone_in_closed_group', (milestone.rec_name,))
+                cls.raise_user_error('reset_milestone_in_closed_group',
+                    (milestone.rec_name,))
 
     @classmethod
     @ModelView.button
@@ -1019,10 +1047,13 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         Date = pool.get('ir.date')
 
         today = Date.today()
+        to_cancel = []
+        to_confirm = []
         to_proceed = []
         for milestone in milestones:
             if milestone.state != 'confirmed' or milestone.invoice:
                 continue
+
             save_milestone = False
             if not milestone.planned_invoice_date:
                 milestone.planned_invoice_date = (
@@ -1041,7 +1072,43 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 to_proceed.append(milestone)
             elif save_milestone:
                 milestone.save()
-        cls.proceed(to_proceed)
+
+            pending_sale_lines = []
+            if milestone.invoice_method in ('shipped_goods', 'sale_lines'):
+                pending_sale_lines = [sl.id
+                    for sl in milestone.sale_lines_to_invoice
+                    if sl.quantity_to_ship > 0]
+            pending_sales = []
+            if milestone.invoice_method == 'remainder':
+                pending_sales = [s.id for s in milestone.sales_to_invoice
+                    if s.shipment_state != 'sent']
+
+            if (not invoice and milestone.kind == 'system'
+                    and milestone.invoice_method in ('shipped_goods',
+                        'sale_lines', 'remainder')
+                    and not pending_sale_lines and not pending_sales):
+                # triggered milestone with nothing pending to ship
+                to_cancel.append(milestone)
+                continue
+
+            if invoice and milestone.invoice_method == 'shipped_goods':
+                pending_sale_lines = [sl.id
+                    for sl in milestone.sale_lines_to_invoice
+                    if sl.quantity_to_ship > 0]
+                if pending_sale_lines:
+                    new_milestone, = cls.copy([milestone], {
+                            'sale_lines_to_invoice': [
+                                ('add', pending_sale_lines),
+                                ],
+                            })
+                    to_confirm.append(new_milestone)
+
+        if to_cancel:
+            cls.cancel(to_cancel)
+        if to_confirm:
+            cls.confirm(to_confirm)
+        if to_proceed:
+            cls.proceed(to_proceed)
 
     @classmethod
     @Workflow.transition('processing')
@@ -1149,8 +1216,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                         else -self.amount)
                     lines.append(line)
         else:
-            if self.invoice_method == 'shipped_goods':
-                lines += self._get_shipped_goods_invoice_lines()
+            if self.invoice_method in ('shipped_goods', 'sale_lines'):
+                lines += self._get_sale_lines_invoice_lines()
             else:  # remainder
                 for sale in self.sales_to_invoice:
                     inv_line_desc = self.calc_invoice_line_description([sale])
@@ -1212,9 +1279,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
         return invoice_line
 
-    def _get_shipped_goods_invoice_lines(self):
+    def _get_sale_lines_invoice_lines(self):
         invoice_lines = []
         for sale_line in self.sale_lines_to_invoice:
+            if (self.invoice_method == 'shipped_goods'
+                    and sale_line.shipped_amount <= 0):
+                continue
             invoice_type = ('out_credit_note' if sale_line.quantity < 0.0
                 else 'out_invoice')
             inv_line_desc = self.calc_invoice_line_description(
@@ -1291,11 +1361,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             default = {}
         default.setdefault('code', None)
         default.setdefault('processed_date', None)
-        default.setdefault('trigger_lines', [])
-        default.setdefault('sale_lines_to_invoice', [])
-        default.setdefault('sales_to_invoice', [])
         default.setdefault('planned_invoice_date', None)
         default.setdefault('invoice', None)
+        if Transaction().context.get('milestone_group_copy'):
+            default.setdefault('trigger_lines', [])
+            default.setdefault('sale_lines_to_invoice', [])
+            default.setdefault('sales_to_invoice', [])
         return super(AccountInvoiceMilestone, cls).copy(milestones, default)
 
     @classmethod
@@ -1314,9 +1385,19 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         return super(AccountInvoiceMilestone, cls).create(vlist)
 
 
-class AccountInvoiceMilestoneSaleLine(ModelSQL):
-    'Account Invoice Milestone - Sale Line'
-    __name__ = 'account.invoice.milestone-sale.line'
+class AccountInvoiceMilestoneTriggerSaleLine(ModelSQL):
+    'Account Invoice Milestone - Trigger - Sale Line'
+    __name__ = 'account.invoice.milestone-trigger-sale.line'
+    milestone = fields.Many2One('account.invoice.milestone',
+        'Account Invoice Milestone', ondelete='CASCADE', required=True,
+         select=True)
+    sale_line = fields.Many2One('sale.line', 'Sale Line', ondelete='CASCADE',
+        required=True, select=True)
+
+
+class AccountInvoiceMilestoneToInvoiceSaleLine(ModelSQL):
+    'Account Invoice Milestone - To Invoice - Sale Line'
+    __name__ = 'account.invoice.milestone-to_invoice-sale.line'
     milestone = fields.Many2One('account.invoice.milestone',
         'Account Invoice Milestone', ondelete='CASCADE', required=True,
          select=True)
