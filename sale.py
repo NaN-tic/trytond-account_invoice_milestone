@@ -28,10 +28,7 @@ class Sale:
             ('party', '=', Eval('party', -1)),
             ],
         states={
-            'required': ((~Eval('state', '').in_(['draft', 'cancel']))
-                & ~Bool(Eval('milestone_group_type', 0))),
             'readonly': (~Bool(Eval('party', 0)) |
-                Bool(Eval('milestone_group_type')) |
                 ~Eval('state').in_(['draft', 'quotation'])),
             },
         depends=['company', 'currency', 'party',
@@ -71,7 +68,7 @@ class Sale:
         return invoice_state
 
     @classmethod
-    def confirm(cls, sales):
+    def create_milestones(cls, sales):
         pool = Pool()
         Milestone = pool.get('account.invoice.milestone')
 
@@ -85,10 +82,8 @@ class Sale:
                 group = sale.milestone_group
             if group:
                 milestones_to_confirm += [m for m in group.milestones
-                    if m.kind == 'system' and m.state == 'draft']
+                    if m.state == 'draft']
                 sales_by_milestone_group.setdefault(group, []).append(sale)
-
-        super(Sale, cls).confirm(sales)
 
         Milestone.confirm(milestones_to_confirm)
         for group, group_sales in sales_by_milestone_group.iteritems():
@@ -97,6 +92,7 @@ class Sale:
     @classmethod
     def process(cls, sales):
         super(Sale, cls).process(sales)
+        cls.create_milestones(sales)
 
         sales_by_milestone_group = {}
         for sale in sales:

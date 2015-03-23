@@ -968,6 +968,14 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             },
         depends=['company', 'party', 'state'])
 
+    advancement_product = fields.Many2One('product.product',
+        'Advancement Product', states={
+            'readonly': Eval('state') != 'draft',
+            'required': Eval('invoice_method') == 'amount',
+            'invisible': Eval('invoice_method') != 'amount',
+            }, depends=['currency_digits', 'state', 'invoice_method'])
+
+
     @classmethod
     def __setup__(cls):
         super(AccountInvoiceMilestone, cls).__setup__()
@@ -1238,7 +1246,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         invoice.payment_term = payment_term
         invoice.invoice_date = self.planned_invoice_date
 
-        if getattr(self.party, 'agent'):
+        if hasattr(self.party, 'agent'):
             # Compatibility with commission_party
             invoice.agent = self.party.agent
 
@@ -1385,13 +1393,13 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
         return invoice_line
 
-    @property
-    def advancement_product(self):
+    @classmethod
+    def default_advancement_product(cls):
         pool = Pool()
         Config = pool.get('account.configuration')
         config = Config.get_singleton()
         if not config.milestone_advancement_product:
-            self.raise_user_error('no_advancement_product')
+            cls.raise_user_error('no_advancement_product')
         return config.milestone_advancement_product
 
     @classmethod

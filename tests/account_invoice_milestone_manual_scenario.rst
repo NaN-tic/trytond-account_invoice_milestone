@@ -4,6 +4,248 @@ Account Invoice Milestone - Manual Milestones
 
 .. Set the Planned Invoice Date in some miletones. It is used as Invoice Date
    without any other consequence
+Imports::
+
+    >>> import datetime
+    >>> from dateutil.relativedelta import relativedelta
+    >>> from decimal import Decimal
+    >>> from operator import attrgetter
+    >>> from proteus import config, Model, Wizard
+    >>> today = datetime.date.today()
+
+Create database::
+
+    >>> config = config.set_trytond()
+    >>> config.pool.test = True
+
+Install account_invoice_milestone::
+
+    >>> Module = Model.get('ir.module.module')
+    >>> module, = Module.find([('name', '=', 'account_invoice_milestone')])
+    >>> Module.install([module.id], config.context)
+    >>> Wizard('ir.module.module.install_upgrade').execute('upgrade')
+
+Create company::
+
+    >>> Currency = Model.get('currency.currency')
+    >>> CurrencyRate = Model.get('currency.currency.rate')
+    >>> currencies = Currency.find([('code', '=', 'USD')])
+    >>> if not currencies:
+    ...     currency = Currency(name='U.S. Dollar', symbol='$', code='USD',
+    ...         rounding=Decimal('0.01'), mon_grouping='[3, 3, 0]',
+    ...         mon_decimal_point='.', mon_thousands_sep=',')
+    ...     currency.save()
+    ...     CurrencyRate(date=today + relativedelta(month=1, day=1),
+    ...         rate=Decimal('1.0'), currency=currency).save()
+    ... else:
+    ...     currency, = currencies
+    >>> Company = Model.get('company.company')
+    >>> Party = Model.get('party.party')
+    >>> company_config = Wizard('company.company.config')
+    >>> company_config.execute('company')
+    >>> company = company_config.form
+    >>> party = Party(name='Dunder Mifflin')
+    >>> party.save()
+    >>> company.party = party
+    >>> company.currency = currency
+    >>> company_config.execute('add')
+    >>> company, = Company.find([])
+
+
+
+Reload the context::
+
+    >>> User = Model.get('res.user')
+    >>> config._context = User.get_preferences(True, config.context)
+
+Create fiscal year::
+
+    >>> FiscalYear = Model.get('account.fiscalyear')
+    >>> Sequence = Model.get('ir.sequence')
+    >>> SequenceStrict = Model.get('ir.sequence.strict')
+    >>> fiscalyear = FiscalYear(name=str(today.year))
+    >>> fiscalyear.start_date = today + relativedelta(month=1, day=1)
+    >>> fiscalyear.end_date = today + relativedelta(month=12, day=31)
+    >>> fiscalyear.company = company
+    >>> post_move_seq = Sequence(name=str(today.year), code='account.move',
+    ...     company=company)
+    >>> post_move_seq.save()
+    >>> fiscalyear.post_move_sequence = post_move_seq
+    >>> invoice_seq = SequenceStrict(name=str(today.year),
+    ...     code='account.invoice', company=company)
+    >>> invoice_seq.save()
+    >>> fiscalyear.out_invoice_sequence = invoice_seq
+    >>> fiscalyear.in_invoice_sequence = invoice_seq
+    >>> fiscalyear.out_credit_note_sequence = invoice_seq
+    >>> fiscalyear.in_credit_note_sequence = invoice_seq
+    >>> fiscalyear.save()
+    >>> FiscalYear.create_period([fiscalyear.id], config.context)
+
+Create chart of accounts::
+
+    >>> AccountTemplate = Model.get('account.account.template')
+    >>> Account = Model.get('account.account')
+    >>> Journal = Model.get('account.journal')
+    >>> account_template, = AccountTemplate.find([('parent', '=', None)])
+    >>> create_chart = Wizard('account.create_chart')
+    >>> create_chart.execute('account')
+    >>> create_chart.form.account_template = account_template
+    >>> create_chart.form.company = company
+    >>> create_chart.execute('create_account')
+    >>> receivable, = Account.find([
+    ...         ('kind', '=', 'receivable'),
+    ...         ('company', '=', company.id),
+    ...         ])
+    >>> payable, = Account.find([
+    ...         ('kind', '=', 'payable'),
+    ...         ('company', '=', company.id),
+    ...         ])
+    >>> revenue, = Account.find([
+    ...         ('kind', '=', 'revenue'),
+    ...         ('company', '=', company.id),
+    ...         ])
+    >>> expense, = Account.find([
+    ...         ('kind', '=', 'expense'),
+    ...         ('company', '=', company.id),
+    ...         ])
+    >>> create_chart.form.account_receivable = receivable
+    >>> create_chart.form.account_payable = payable
+    >>> create_chart.execute('create_properties')
+    >>> cash, = Account.find([
+    ...         ('kind', '=', 'other'),
+    ...         ('name', '=', 'Main Cash'),
+    ...         ('company', '=', company.id),
+    ...         ])
+    >>> cash_journal, = Journal.find([('type', '=', 'cash')])
+    >>> cash_journal.credit_account = cash
+    >>> cash_journal.debit_account = cash
+    >>> cash_journal.save()
+
+Create parties::
+
+    >>> Party = Model.get('party.party')
+    >>> customer = Party(name='Customer')
+    >>> customer.save()
+
+
+
+Create products::
+
+    >>> ProductUom = Model.get('product.uom')
+    >>> unit, = ProductUom.find([('name', '=', 'Unit')])
+    >>> ProductTemplate = Model.get('product.template')
+    >>> Product = Model.get('product.product')
+    >>> product = Product()
+    >>> template = ProductTemplate()
+    >>> template.name = 'product'
+    >>> template.default_uom = unit
+    >>> template.type = 'goods'
+    >>> template.purchasable = True
+    >>> template.salable = True
+    >>> template.list_price = Decimal('10')
+    >>> template.cost_price = Decimal('5')
+    >>> template.cost_price_method = 'fixed'
+    >>> template.account_expense = expense
+    >>> template.account_revenue = revenue
+    >>> template.save()
+    >>> product.template = template
+    >>> product.save()
+
+    >>> consumable = Product()
+    >>> template = ProductTemplate()
+    >>> template.name = 'consumable'
+    >>> template.default_uom = unit
+    >>> template.type = 'goods'
+    >>> template.consumable = True
+    >>> template.salable = True
+    >>> template.list_price = Decimal('30')
+    >>> template.cost_price = Decimal('10')
+    >>> template.cost_price_method = 'fixed'
+    >>> template.account_expense = expense
+    >>> template.account_revenue = revenue
+    >>> template.save()
+    >>> consumable.template = template
+    >>> consumable.save()
+
+    >>> advancement = Product()
+    >>> template = ProductTemplate()
+    >>> template.name = 'Advancment'
+    >>> template.default_uom = unit
+    >>> template.type = 'service'
+    >>> template.list_price = Decimal('0')
+    >>> template.cost_price = Decimal('0')
+    >>> template.cost_price_method = 'fixed'
+    >>> template.account_expense = expense
+    >>> template.account_revenue = revenue
+    >>> template.save()
+    >>> advancement.template = template
+    >>> advancement.save()
+
+
+Use advancement product for advancement invoices::
+
+    >>> AccountConfiguration = Model.get('account.configuration')
+    >>> milestone_sequence, = Sequence.find([
+    ...     ('code', '=', 'account.invoice.milestone'),
+    ...     ], limit=1)
+    >>> milestone_group_sequence, = Sequence.find([
+    ...     ('code', '=', 'account.invoice.milestone.group'),
+    ...     ], limit=1)
+    >>> account_config = AccountConfiguration(1)
+    >>> account_config.milestone_advancement_product = advancement
+    >>> account_config.milestone_sequence = milestone_sequence
+    >>> account_config.milestone_group_sequence = milestone_group_sequence
+    >>> account_config.save()
+
+Create payment term::
+
+    >>> PaymentTerm = Model.get('account.invoice.payment_term')
+    >>> PaymentTermLine = Model.get('account.invoice.payment_term.line')
+    >>> payment_term = PaymentTerm(name='Direct')
+    >>> payment_term_line = PaymentTermLine(type='remainder', days=0)
+    >>> payment_term.lines.append(payment_term_line)
+    >>> payment_term.save()
+
+Create an Inventory::
+
+    >>> Inventory = Model.get('stock.inventory')
+    >>> InventoryLine = Model.get('stock.inventory.line')
+    >>> Location = Model.get('stock.location')
+    >>> storage, = Location.find([
+    ...         ('code', '=', 'STO'),
+    ...         ])
+    >>> inventory = Inventory()
+    >>> inventory.location = storage
+    >>> inventory.save()
+    >>> inventory_line = inventory.lines.new()
+    >>> inventory_line.product=product
+    >>> inventory_line.quantity = 200.0
+    >>> inventory_line.expected_quantity = 0.0
+    >>> inventory.save()
+    >>> inventory.click('confirm')
+    >>> inventory.state
+    u'done'
+
+
+Create Milestone Group Type::
+
+    >>> MileStoneType = Model.get('account.invoice.milestone.type')
+    >>> MileStoneGroupType = Model.get('account.invoice.milestone.group.type')
+    >>> group_type = MileStoneGroupType(name='Test')
+    >>> fixed_type = group_type.lines.new()
+    >>> fixed_type.kind = 'manual'
+    >>> fixed_type.invoice_method = 'fixed'
+    >>> fixed_type.amount = Decimal('100.0')
+    >>> fixed_type.currency = currency
+    >>> fixed_type.days = 5
+    >>> remainder = group_type.lines.new()
+    >>> remainder.invoice_method = 'remainder'
+    >>> remainder.kind = 'manual'
+    >>> remainder.months = 1
+    >>> group_type.save()
+
+
+
 
 Manual Amount based Milestones
 ==============================
@@ -13,339 +255,86 @@ One Sale One Amount Milestone - Normal workflow
 
 Create a Sale with lines with service products and goods products::
 
-Create a Milestone Group with a manual amount based Milestone with an amount
-less than sales amount::
-
-Assign the Milestone Group to the Sale and confirm the Sale::
-
-Check Milestone's amounts: Total Amount == Sale's Untaxed Amount, Merited
-Amount, Invoiced Amount and Assigned Amount is 0.0::
-
-Confirm and Invoice the Milestone::
-
-Check an invoice with untaxed amount as Milestone's amount is created and
-associated to milestone::
-
-Confirm the invoice::
-
-Check Invoiced Amount is the Invoice Untaxed Amount and the rest of Milestone's
-amounts remain the same::
-
-Process the Sale and it's Shipment::
-
-Check Shipment State of sale is Sent and Invoice State is Waiting::
-
-Check the Merited Amount is the Sale's Untaxed Amount::
-
-Close the Milestone Group::
-
-Check a Remainder Milestone is added to group with a Draft invoice with the
-Sale's Untaxed Amount less previous invoice amount::
-
-Confirm the invoice and check the Invoiced Amount and Assigned Amount are the
-Total Amount and the Group's state is Completed::
-
-Pay the invoices and check the Group's state is Completed::
-
-
-One Sale One Amount Milestone - Close group before invoice Milestone
---------------------------------------------------------------------
-
-Duplicate the Sale and create a Milestone Group with a Manual Amount based
-Milestone and associate the Milestone Group to the Sale::
-
-Process the Sale and its Shipment::
-
-Close the Milestone Group: an User Error is raised
-
-Cancel the milestone and close the group::
-
-Check a remainder milestone is created with an associated invoice with the
-sale's untaxed amount::
-
-
-One Sale One Amount Milestone - Two closings and Credit Note
-------------------------------------------------------------
-
-Duplicate the sale and create a Milestone Group with a Manual Amount based
-Milestone with an amount greater than Sale's Untaxed Amount::
-
-Associate the Milestone Group to Sale and process the Sale::
-
-Confirm and Invoice the Milestone. Confirm the associated invoice::
-
-Close the Milestone Group::
-
-Check a remainder Milestone is created with the service products and amount
-0::
-
-Process the Sale's Shipment::
-
-Close the Milestone Group::
-
-Check that another Remainder Milestone is created with a Credit Note Invoice
-associated with the goods products and Untaxed Amount the difference between
-advanced Milestone Amount and Sales amount::
-
-
-Two Sales One Amount Milestone
-------------------------------
-
-Duplicate the sale twice and create a Milestone Group with a Manual Amount
-based Milestone::
-
-Associate the Milestone Group to the sales and process completly both::
-
-Check group's amounts::
-
-Confirm and Invoice the Milestone. Confirm the associated invoice::
-
-Check group's amounts::
-
-Close the group and confirm the invoice. Check the amounts::
-
-
-Two Sales Two Amount Milestone
-------------------------------
-
-Duplicate the sale twice and create a Milestone Group with a Manual Amount
-based Milestone::
-
-Associate the Milestone Group to one sale and confirm it::
-
-Check group's amounts::
-
-Confirm and Invoice the Milestone. Confirm the associated invoice::
-
-Add the second Sale to Milestone Group, add a second Amount based Milestone and
-confirm the sale. Check amounts::
-
-Confirm and invoice the second milestone::
-
-Process both sales without process thier shipments::
-
-Close (partialy) the group. Confirm invoice and check amounts::
-
-Close again the group. Check new Remainder milestone is created but it doesn't
-have invoice (and if you try to invoice the milestone it is not created). Check
-the amounts (assigned amount must to be Total Amount)::
-
-Cancel the pending remainder milestone. Check Assigned Amount is the same than
-Merited Amount::
-
-Process the shipment of first sale and close the group. Confirm invoice and
-check amounts::
-
-Process the shipment of second sale and close the group. Confirm the invoice.
-Group must to be *completed*::
-
-
-One Sale, One return Sale and Two Amount Milestone
---------------------------------------------------
-
-Duplicate the sale and create a Milestone Group with two Manual Amount based
-Milestone::
-
-Associate the Milestone Group to the Sale and process it::
-
-Confirm and Invoice the two Milestones::
-
-Return some lines of the sale and associate the group to the new returning
-sale::
-
-Process the returning sale::
-
-Check Milestone Group's amounts and close it. Confirm the invoice::
-
-Repeat this test but returning more amount than advanced. It generates a Credit
-Note on group closing::
-
-
-Shipped Goods based Milestones
-==============================
-
-One Sale One Shipped Goods Milestone - Normal workflow
--------------------------------------------------------
-
-Duplicate the sale and create a Milestone Group with a Shipped Goods based
-Milestone::
-
-Confirm and process the Sale. Add all sale's moves to the milestone, confirm it
-and check group's amounts::
-
-Process the sale's shipment::
-
-Invoice the Shipped Goods Milestone. Confirm the invoice::
-
-Check the group's amounts. Merited amount is the Total Amount, the Invoiced
-Amount is the amount of goods products (shipment amount). Pending amount is the
-services lines amount::
-
-Close the Milestone Group::
-
-Check a Remainder Milestone is added to group with a Draft invoice with the
-services lines amount::
-
-Confirm the invoice and check the group is completed::
-
-
-Multiple Sale Multiple Shipped Goods Milestone - Close before ship - Partial shipment
--------------------------------------------------------------------------------------
-
-Duplicate the sale and create a Milestone Group with a Shipped Goods based
-Milestone::
-
-Confirm and process the Sale. Add all sale's moves to the milestone, confirm it
-and check group's amounts::
-
-Try to close the group. An User Error is raised.
-
-Process partialy the sale's shipment::
-
-Check the group's amounts. Check the new move with remaining quantity is in
-milestone::
-
-Remove the pending move from milestone and invoice the milestone::
-
-Confirm the invoice and check amounts::
-
-Add a Shipped Goods Milestone with the pending move and confirm it::
-
-Cancel the pending shipment::
-
-Handle the Shipment Exception of sale ignoring (no recreating) the cancelled
-move::
-
-The second Milestone is cancelled. Close the group. Check new Remainder
-Milestone is created with an invoice with services lines. Confirm the invoice::
-
-Duplicate the sale, remove services lines and confirm and process it (the same
-Milestone Group is associated)::
-
-Check the group's amounts. Add a Shipped Goods Milestone with the moves of the
-new sale. Confirm it::
-
-Ship some of the quantities of sale's shipment::
-
-Cancel the pending quantities::
-
-Handle the Shipment Exception ignoring the cancelled moves::
-
-Check the group's amounts: Assigned Amount must to be 0.0 and Total Amount had
-to be decreated with the canceled moves amount::
-
-Close the group and confirm the invoice (the sale's amount without cancelled
-amount)::
-
-Duplicate the last sale (without services) and confirm and process it::
-
-Create a new Shipped Goods Milestone with the new sale's moves. Confirm it::
-
-Process partialy the sale's shipment. Process the new shipment::
-
-Invoice the Milestone and confirm the invoice::
-
-Check the group is completed::
-
-
-Shipped Goods Milestone with Sale Return
-----------------------------------------
-
-Duplicate the original sale and create a Milestone Group with a Shipped Goods
-based Milestone::
-
-Confirm and process the Sale. Add all sale's moves to the milestone, confirm it
-and check group's amounts::
-
-Process the sale's shipment::
-
-Create a Sale Return for some of products (services and no services)::
-
-Process the sale. Add its moves to the milestone::
-
-Process the Return Sale shipment::
-
-Invoice the Milestone::
-
-Close the group::
-
-
-Mixed Manual Milestones
-=======================
-
-Duplicate the original sale and create a Milestone Group with an Amount
-Milestone and a Shipped Goods Milestone. Confirm and process the Sale::
-
-Confirm and invoice the Amount Milestone. Confirm its invoice::
-
-Add all sale's moves to Shipped Goods Milestone. Confirm and invoice it.
-Confirm the new invoice::
-
-Close the Milestone Group and confirm the new invoice::
-
-Create two new sales with new products and associate them to the Milestone
-Group. Confirm and process the sales::
-
-Add an Amount Milestone and two Shipped Goods Milestone to group. Associate all
-the moves of one of the new sales and part of the moves of the other sale to
-the first Shipped Goods Milestone. Associate the rest of the moves to the
-second Shpped Goods Milestone::
-
-Confirm and invoice the pending Amount Milestone and the first (of the new)
-Shipped Goods Milestone::
-
-Create a Sale Return, associate to the Milestone Group and confirm and process
-it::
-
-Add the return sale moves to the last Shipped Goods Milestone and invoice it::
-
-Check the group is completed::
-
-
-Mixed Manual Milestones invoiced from Shipments
-===============================================
-
-Duplicate the original sale and create a Milestone Group *invoice shipments*
-with an Amount Milestone and a Shipped Goods Milestone::
-
-Confirm and process the Sale::
-
-Confirm and invoice the Amount Milestone. Confirm its invoice::
-
-Add some of sale's moves to Shipped Goods Milestone. Confirm it::
-
-Process the shipment::
-
-Check a new Shipped Goods Milestone is created with the moves not added to the
-other milestone and it has an Invoice. Confirm it::
-
-Invoice the pending Shipped Goods Milestone and confirm its invoice::
-
-Check the group is completed::
-
-Create two new sales with new products and associate them to the Milestone
-Group. Confirm and process the sales::
-
-Add an Amount Milestone and a Shipped Goods Milestone to group. Associate some
-of the moves of one of the sales to this milestone::
-
-Confirm and invoice the pending Amount Milestone and the first (of the new)
-Shipped Goods Milestone::
-
-Process the new sales shipments::
-
-Check a new Shiped Goods Milestone is created with the moves not manually added
-to previous Shipped Goods Milestones::
-
-Create a Sale Return, associate to the Milestone Group and confirm and process
-it::
-
-Add some of the the return sale moves to the last Shipped Goods Milestone::
-
-Process the Sale Return shipment. Check a new Shipped Goods Milestone is
-created::
-
-Invoice the pending Shipped Goods Milestone::
-
-Check the group is completed::
+    >>> Sale = Model.get('sale.sale')
+    >>> SaleLine = Model.get('sale.line')
+    >>> sale = Sale()
+    >>> sale.party = customer
+    >>> sale.milestone_group_type = group_type
+    >>> sale.payment_term = payment_term
+    >>> consumable_line = sale.lines.new()
+    >>> consumable_line.product = consumable
+    >>> consumable_line.quantity = 6.0
+    >>> consumable_line.amount
+    Decimal('180.00')
+    >>> goods_line = sale.lines.new()
+    >>> goods_line.product = product
+    >>> goods_line.quantity = 20.0
+    >>> goods_line.amount
+    Decimal('200.00')
+    >>> sale.click('quote')
+    >>> sale.click('confirm')
+    >>> sale.click('process')
+
+    >>> group = sale.milestone_group
+    >>> group.reload()
+    >>> reminder, = [x for x in group.milestones if x.invoice_method == 'remainder']
+    >>> fixed_milestone, = [x for x in group.milestones if x.invoice_method == 'amount']
+    >>> fixed_milestone.invoice_method
+    u'amount'
+    >>> fixed_milestone.amount
+    Decimal('100.00')
+    >>> fixed_milestone.click('confirm')
+    >>> reminder.click('confirm')
+    >>> group.reload()
+    >>> group.total_amount
+    Decimal('380.00')
+    >>> group.amount_to_assign
+    Decimal('0.00')
+    >>> group.assigned_amount
+    Decimal('380.00')
+    >>> group.invoiced_amount
+    Decimal('0.0')
+    >>> group.merited_amount
+    Decimal('0.00')
+    >>> group.state
+    'pending'
+
+Create a Invoice for the milestone::
+
+    >>> fixed_milestone.click('do_invoice')
+    >>> fixed_milestone.state
+    u'processing'
+    >>> invoice = fixed_milestone.invoice
+    >>> invoice.untaxed_amount
+    Decimal('100.00')
+    >>> group.reload()
+    >>> group.invoiced_amount
+    Decimal('100.000')
+    >>> group.merited_amount
+    Decimal('0.00')
+    >>> group.state
+    'pending'
+
+Test that invoice_amount can not be modified::
+
+    >>> invoice_line, = invoice.lines
+    >>> invoice_line.unit_price = Decimal('110.0')
+    >>> invoice.save()
+    Traceback (most recent call last):
+        ...
+    UserError: ('UserError', (u'Amount of invoice "2 Customer" must be equal than its milestone "1" amount', ''))
+    >>> invoice.reload()
+
+Pay the invoice and check that the milestone is marked as succeeded::
+
+    >>> invoice.click('post')
+    >>> pay = Wizard('account.invoice.pay', [invoice])
+    >>> pay.form.journal = cash_journal
+    >>> pay.execute('choice')
+    >>> invoice.reload()
+    >>> invoice.state
+    u'paid'
+    >>> fixed_milestone.reload()
+    >>> fixed_milestone.state
+    u'succeeded'
 

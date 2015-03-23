@@ -26,8 +26,12 @@ class TestCase(unittest.TestCase):
 def suite():
     suite = trytond.tests.test_tryton.suite()
     suite.addTests(unittest.TestLoader().loadTestsFromTestCase(TestCase))
-    # suite.addTests(doctest.DocFileSuite(
-    #         'account_invoice_milestone_scenario.rst',
-    #         setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
-    #         optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+    suite.addTests(doctest.DocFileSuite(
+            'account_invoice_milestone_manual_scenario.rst',
+            setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+    suite.addTests(doctest.DocFileSuite(
+            'account_invoice_milestone_system_scenario.rst',
+            setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
     return suite

@@ -23,9 +23,25 @@ class Invoice:
     def __setup__(cls):
         super(Invoice, cls).__setup__()
         cls._error_messages.update({
-                'milestone_amount': ('Amount of invoice "%(invoice)s" must be '
-                    'equal than its milestone "%(milestone)s" amount'),
+                'milestone_amount': ('Amount of invoice "%s" must be '
+                    'equal than its milestone "%s" amount'),
                 })
+
+
+    @classmethod
+    def validate(cls, invoices):
+        super(Invoice, cls).validate(invoices)
+        for record in invoices:
+            record.check_milestone_amount()
+    
+    def check_milestone_amount(self):
+        
+        if not self.milestone:
+            return
+
+        if self.milestone.amount != self.untaxed_amount:
+            self.raise_user_error('milestone_amount',
+                                (self.rec_name, self.milestone.rec_name))
 
     @fields.depends('milestone')
     def on_change_with_milestone_group(self):
