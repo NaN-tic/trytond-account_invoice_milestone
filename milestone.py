@@ -308,8 +308,8 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
         if self.kind == 'system':
             milestone.trigger = self.trigger
             milestone.trigger_shipped_amount = self.trigger_shipped_amount
-            milestone.trigger_lines = list(sale.lines)
-
+            milestone.trigger_lines = [l for l in sale.lines
+                    if l.type == 'line']
         if self.invoice_method in ('fixed', 'percent_on_total'):
             milestone.invoice_method = 'amount'
             if self.invoice_method == 'fixed':
