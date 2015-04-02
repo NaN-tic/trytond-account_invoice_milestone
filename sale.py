@@ -114,6 +114,7 @@ class Sale:
         else:
             default = default.copy()
         default.setdefault('remainder_milestones', [])
+        default.setdefault('milestone_group', None)
         return super(Sale, cls).copy(sales, default=default)
 
     @classmethod
