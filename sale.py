@@ -180,6 +180,9 @@ class SaleLine:
         pool = Pool()
         Uom = pool.get('product.uom')
 
+        if self.type != 'line':
+            return 0.0
+
         if (self.sale.invoice_method == 'order'
                 or not self.product
                 or self.product.type == 'service'):
