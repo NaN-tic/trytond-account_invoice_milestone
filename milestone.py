@@ -1400,7 +1400,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         config = Config.get_singleton()
         if not config.milestone_advancement_product:
             cls.raise_user_error('no_advancement_product')
-        return config.milestone_advancement_product
+        return config.milestone_advancement_product.id
 
     @classmethod
     def copy(cls, milestones, default=None):
