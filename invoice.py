@@ -27,19 +27,18 @@ class Invoice:
                     'equal than its milestone "%s" amount'),
                 })
 
-
     @classmethod
     def validate(cls, invoices):
         super(Invoice, cls).validate(invoices)
         for record in invoices:
             record.check_milestone_amount()
-    
+
     def check_milestone_amount(self):
-        
+
         if not self.milestone:
             return
-
-        if self.milestone.amount != self.untaxed_amount:
+        if (self.milestone.invoice_method == 'amount' and
+                self.milestone.amount != self.untaxed_amount):
             self.raise_user_error('milestone_amount',
                                 (self.rec_name, self.milestone.rec_name))
 
