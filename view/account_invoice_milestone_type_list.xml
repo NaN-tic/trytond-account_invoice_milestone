@@ -9,7 +9,7 @@
         <suffix string="%"/>
     </field>
     <field name="invoice_method"/>
-    <field name="percentage">
+    <field name="percentage" factor="100">
         <suffix string="%"/>
     </field>
     <field name="amount"/>

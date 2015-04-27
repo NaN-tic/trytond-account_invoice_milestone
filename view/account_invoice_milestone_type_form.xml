@@ -32,7 +32,7 @@
     </group>
     <label name="divisor"/>
     <group col="2" id="divisor">
-        <field name="divisor" factor="100"/>
+        <field name="divisor"/>
         <label name="divisor" string="%" xalign="0.0" xexpand="1" xfill="1"/>
     </group>
     <separator id="planned_invoice_date_calculator" colspan="4"
