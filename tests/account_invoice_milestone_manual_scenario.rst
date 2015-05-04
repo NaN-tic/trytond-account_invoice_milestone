@@ -322,7 +322,7 @@ Test that invoice_amount can not be modified::
     >>> invoice.save()
     Traceback (most recent call last):
         ...
-    UserError: ('UserError', (u'Amount of invoice "2 Customer" must be equal than its milestone "1" amount', ''))
+    UserError: ('UserError', (u'Amount of invoice "1 Customer" must be equal than its milestone "1" amount', ''))
     >>> invoice.reload()
 
 Pay the invoice and check that the milestone is marked as succeeded::
@@ -337,4 +337,3 @@ Pay the invoice and check that the milestone is marked as succeeded::
     >>> fixed_milestone.reload()
     >>> fixed_milestone.state
     u'succeeded'
-

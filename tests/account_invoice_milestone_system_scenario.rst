@@ -245,8 +245,6 @@ Create Milestone Group Type::
     >>> group_type.save()
 
 
-
-
 Manual Amount based Milestones
 ==============================
 
@@ -274,11 +272,14 @@ Create a Sale with lines with service products and goods products::
     >>> sale.click('quote')
     >>> sale.click('confirm')
     >>> sale.click('process')
-
+    >>> len(sale.invoices)
+    0
     >>> group = sale.milestone_group
     >>> group.reload()
-    >>> remainder_milestone, = [x for x in group.milestones if x.invoice_method == 'remainder']
-    >>> fixed_milestone, = [x for x in group.milestones if x.invoice_method == 'amount']
+    >>> remainder_milestone, = [x for x in group.milestones
+    ...     if x.invoice_method == 'remainder']
+    >>> fixed_milestone, = [x for x in group.milestones
+    ...     if x.invoice_method == 'amount']
     >>> fixed_milestone.amount
     Decimal('100.00')
     >>> invoice = fixed_milestone.invoice
@@ -293,23 +294,17 @@ Create a Sale with lines with service products and goods products::
     >>> group.invoiced_amount
     Decimal('100.000')
 
-
-Make shipments:
+Make shipments::
 
     >>> shipment, = sale.shipments
-    >>> ShipmentOut = Model.get('stock.shipment.out')
-    >>> ShipmentOut.assign_try([shipment.id], config.context)
+    >>> shipment.click('assign_try')
     True
-    >>> ShipmentOut.pack([shipment.id], config.context)
-    >>> ShipmentOut.done([shipment.id], config.context)
-
+    >>> shipment.click('pack')
+    >>> shipment.click('done')
 
 Check remainder_milestone Milestone::
 
     >>> remainder_milestone.reload()
-    >>> remainder_milestone.invoice
-
-
-
-
-
+    >>> invoice = remainder_milestone.invoice
+    >>> invoice.untaxed_amount
+    Decimal('180.00')

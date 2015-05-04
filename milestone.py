@@ -77,14 +77,18 @@ class AccountInvoiceMilestoneGroupType(ModelSQL, ModelView):
         if not group:
             group = self._get_milestones_group(sale)
             group.save()
-        sale.milestone_group = group
-        sale.save()
+            sale.milestone_group = group
+            sale.save()
 
+        milestones = []
         for line in self.lines:
             milestone = line.compute_milestone(sale)
+            if milestone:
+                milestones.append(milestone)
+        if milestones:
             group.milestones = (list(group.milestones)
-                if hasattr(group, 'milestones') else []) + [milestone]
-        group.save()
+                if hasattr(group, 'milestones') else []) + milestones
+            group.save()
         return group
 
     def _get_milestones_group(self, sale):

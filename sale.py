@@ -91,8 +91,10 @@ class Sale:
 
     @classmethod
     def process(cls, sales):
-        super(Sale, cls).process(sales)
+        # We must create milestone group before processing otherwise invoices
+        # are duplicated
         cls.create_milestones(sales)
+        super(Sale, cls).process(sales)
 
         sales_by_milestone_group = {}
         for sale in sales:
