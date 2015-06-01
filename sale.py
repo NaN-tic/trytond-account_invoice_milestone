@@ -76,10 +76,10 @@ class Sale:
         sales_by_milestone_group = {}
         for sale in sales:
             group = None
-            if sale.milestone_group_type:
-                group = sale.milestone_group_type.compute_milestone_group(sale)
-            elif sale.milestone_group:
+            if sale.milestone_group:
                 group = sale.milestone_group
+            elif sale.milestone_group_type:
+                group = sale.milestone_group_type.compute_milestone_group(sale)
             if group:
                 milestones_to_confirm += [m for m in group.milestones
                     if m.state == 'draft']

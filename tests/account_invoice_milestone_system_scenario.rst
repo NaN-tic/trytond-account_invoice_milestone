@@ -276,6 +276,8 @@ Create a Sale with lines with service products and goods products::
     0
     >>> group = sale.milestone_group
     >>> group.reload()
+    >>> len(group.milestones)
+    2
     >>> remainder_milestone, = [x for x in group.milestones
     ...     if x.invoice_method == 'remainder']
     >>> fixed_milestone, = [x for x in group.milestones
@@ -304,7 +306,10 @@ Make shipments::
 
 Check remainder_milestone Milestone::
 
+    >>> group.reload()
+    >>> len(group.milestones)
+    2
     >>> remainder_milestone.reload()
     >>> invoice = remainder_milestone.invoice
     >>> invoice.untaxed_amount
-    Decimal('180.00')
+    Decimal('280.00')
