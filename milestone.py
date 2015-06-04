@@ -819,7 +819,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             ('processing', 'Processing'),
             ('succeeded', 'Succeeded'),
             ('failed', 'Failed'),
-            ('cancel', 'Cancel'),
+            ('cancel', 'Cancelled'),
             ], 'State', readonly=True, select=True)
     processed_date = fields.Date('Processed Date', readonly=True)
 
@@ -1143,9 +1143,14 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 continue
 
             if invoice and milestone.invoice_method == 'shipped_goods':
-                pending_sale_lines = [sl.id
-                    for sl in milestone.sale_lines_to_invoice
-                    if sl.quantity_to_ship > 0]
+                pending_sale_lines = []
+                for sale_line in milestone.sale_lines_to_invoice:
+                    if sale_line.quantity_to_ship <= 0:
+                        continue
+                    if (sale_line.invoice_method == 'order'
+                            and sale_line.quantity_to_invoice <= 0):
+                        continue
+                    pending_sale_lines.append(sale_line)
                 if pending_sale_lines:
                     new_milestone, = cls.copy([milestone], {
                             'sale_lines_to_invoice': [

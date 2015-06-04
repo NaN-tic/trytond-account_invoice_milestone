@@ -901,7 +901,7 @@ msgid "September"
 msgstr "Setembre"
 
 msgctxt "selection:account.invoice.milestone,state:"
-msgid "Cancel"
+msgid "Cancelled"
 msgstr "Cancel·lat"
 
 msgctxt "selection:account.invoice.milestone,state:"
