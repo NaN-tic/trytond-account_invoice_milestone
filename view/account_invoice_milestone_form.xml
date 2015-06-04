@@ -36,8 +36,8 @@
     <field name="sale_lines_to_invoice" colspan="4"/>
     <field name="sales_to_invoice" colspan="4"/>
 
-    <group id="planned_invoice_date_calculator" colspan="2" col="4"
-            string="Planned Invoice Date calculation"
+    <group id="invoice_date_calculator" colspan="2" col="4"
+            string="Invoice Date calculation"
             states="{'invisible': Eval('kind') != 'system'}">
         <label name="months"/>
         <field name="months"/>
@@ -55,6 +55,8 @@
     <group id="invoice" colspan="2" col="2">
         <label name="planned_invoice_date"/>
         <field name="planned_invoice_date"/>
+        <label name="invoice_date"/>
+        <field name="invoice_date"/>
         <label name="invoice"/>
         <field name="invoice"/>
     </group>

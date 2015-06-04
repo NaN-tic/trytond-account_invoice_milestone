@@ -117,8 +117,8 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             'required': Eval('kind') == 'system',
             'invisible': Eval('kind') != 'system',
             }, depends=['kind'],
-        help='Defines when the Milestone will be confirmed and its Planned '
-        'Invoice Date calculated.')
+        help='Defines when the Milestone will be confirmed and its Invoice '
+        'Date calculated.')
     trigger_shipped_amount = fields.Numeric('On Shipped Amount',
         digits=(16, 8),
         domain=[
@@ -734,7 +734,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         milestone.kind = 'manual'
         milestone.invoice_method = 'remainder'
         milestone.sales_to_invoice = sales_to_invoice
-        milestone.planned_invoice_date = Date.today()
+        milestone.invoice_date = Date.today()
         return milestone
 
     @classmethod
@@ -782,14 +782,14 @@ _STATES = {
     }
 _DEPENDS = ['state']
 _STATES_INV_DATE_CALC = {
-    'readonly': (Bool(Eval('planned_invoice_date'))
+    'readonly': (Bool(Eval('invoice_date'))
         | (~Eval('state', '').in_(['draft', 'confirmed']))),
     # 'required': ((Eval('kind', '') == 'system')
     #     & (Eval('state', '') == 'confirmed')
-    #     & (~Bool(Eval('planned_invoice_date')))),
+    #     & (~Bool(Eval('invoice_date')))),
     'invisible': Eval('kind', '') == 'manual',
     }
-_DEPENDS_INV_DATE_CALC = ['planned_invoice_date', 'kind', 'state']
+_DEPENDS_INV_DATE_CALC = ['invoice_date', 'kind', 'state']
 
 
 class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
@@ -831,8 +831,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             'required': Eval('kind') == 'system',
             'invisible': Eval('kind') != 'system',
             }, depends=['state', 'kind'],
-        help='Defines when the Milestone will be confirmed and its Planned '
-        'Invoice Date calculated.')
+        help='Defines when the Milestone will be confirmed and its Invoice '
+        'Date calculated.')
     trigger_shipped_amount = fields.Numeric('On Shipped Amount',
         digits=(16, 8),
         domain=[
@@ -956,10 +956,11 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         states=_STATES_INV_DATE_CALC, depends=_DEPENDS_INV_DATE_CALC)
     days = fields.Integer('Number of Days', required=True,
         states=_STATES_INV_DATE_CALC, depends=_DEPENDS_INV_DATE_CALC)
-    planned_invoice_date = fields.Date('Planned Invoice Date', states={
+    invoice_date = fields.Date('Invoice Date', states={
             'readonly': ~Eval('state', '').in_(['draft', 'confirmed']),
             'required': Eval('state', '').in_(['processing', 'succeeded']),
             }, depends=['state'])
+    planned_invoice_date = fields.Date('Planned Invoice Date')
 
     invoice = fields.One2One('account.invoice-account.invoice.milestone',
         'milestone', 'invoice', 'Invoice', readonly=True,
@@ -1106,12 +1107,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 continue
 
             save_milestone = False
-            if not milestone.planned_invoice_date:
-                milestone.planned_invoice_date = (
-                    milestone._calc_planned_invoice_date())
+            if not milestone.invoice_date:
+                milestone.invoice_date = (
+                    milestone._calc_invoice_date())
                 save_milestone = True
             if (milestone.kind == 'system' and
-                    milestone.planned_invoice_date > today):
+                    milestone.invoice_date > today):
                 # Don't create invoices if it's not the time
                 if save_milestone:
                     milestone.save()
@@ -1191,7 +1192,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     def cancel(cls, milestiones):
         pass
 
-    def _calc_planned_invoice_date(self):
+    def _calc_invoice_date(self):
         pool = Pool()
         Date = pool.get('ir.date')
         today = Date.today()
@@ -1253,7 +1254,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         invoice.currency = self.group.currency
         invoice.account = self.party.account_receivable
         invoice.payment_term = payment_term
-        invoice.invoice_date = self.planned_invoice_date
+        invoice.invoice_date = self.invoice_date
 
         if hasattr(self.party, 'agent'):
             # Compatibility with commission_party
@@ -1417,7 +1418,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             default = {}
         default.setdefault('code', None)
         default.setdefault('processed_date', None)
-        default.setdefault('planned_invoice_date', None)
+        default.setdefault('invoice_date', None)
         default.setdefault('invoice', None)
         if Transaction().context.get('milestone_group_copy'):
             default.setdefault('trigger_lines', [])
