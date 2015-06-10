@@ -808,7 +808,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         'on_change_with_party', searcher='search_party')
 
     code = fields.Char('Code', required=True, readonly=True)
-    description = fields.Char('Description', states=_STATES, depends=_DEPENDS,
+    description = fields.Text('Description', states=_STATES, depends=_DEPENDS,
         help='It will be used to prepare the description field of invoice '
         'lines.\nYou can use the next tags and they will be replaced by these '
         'fields from the sale\'s related to milestone: {sale_description}, '
