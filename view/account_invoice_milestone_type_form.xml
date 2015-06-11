@@ -31,10 +31,7 @@
         <label name="percentage" string="%" xalign="0.0" xexpand="1" xfill="1"/>
     </group>
     <label name="divisor"/>
-    <group col="2" id="divisor">
-        <field name="divisor"/>
-        <label name="divisor" string="%" xalign="0.0" xexpand="1" xfill="1"/>
-    </group>
+    <field name="divisor"/>
     <separator id="invoice_date_calculator" colspan="4"
         string="Invoice Date calculation"/>
     <label name="months"/>
