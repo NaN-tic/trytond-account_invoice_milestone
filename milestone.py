@@ -1014,8 +1014,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 })
         cls._error_messages.update({
                 'invalid_invoice_method': (
-                    'Invalid combination of invoice method on milestone '
-                    '"%(milestone)s" and sales %(sales)s.'),
+                    'Invalid combination of invoice method and trigger on '
+                    'milestone "%(milestone)s" and sales %(sales)s.'),
                 'reset_milestone_in_closed_group': (
                     'You cannot reset to draft the Milestone "%s" because it '
                     'belongs to a closed Milestone Group.'),
@@ -1086,9 +1086,21 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             milestone.check_sale_invoice_method()
 
     def check_sale_invoice_method(self):
+        if self.kind != 'system' or self.trigger != 'confirmed_sale':
+            return
         if self.invoice_method == 'remainder':
             sales_shipment_invoice = [s for s in self.sales_to_invoice
                 if s.invoice_method == 'shipment']
+            if sales_shipment_invoice:
+                self.raise_user_error('invalid_invoice_method', {
+                        'milestone': self.rec_name,
+                        'sales': ', '.join('"%s"' % s.rec_name
+                            for s in sales_shipment_invoice),
+                        })
+        if self.invoice_method == 'sale_lines':
+            sales_shipment_invoice = set([sl.sale
+                    for sl in self.sale_lines_to_invoice
+                    if sl.sale.invoice_method == 'shipment'])
             if sales_shipment_invoice:
                 self.raise_user_error('invalid_invoice_method', {
                         'milestone': self.rec_name,
