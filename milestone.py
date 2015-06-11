@@ -149,7 +149,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             ], 'Invoice Method', required=True, sort=False,
         domain=[
             If(Eval('trigger', '') == 'confirmed_sale',
-                ('invoice_method', 'in', ['fixed', 'percent_on_total']),
+                ('invoice_method', '!=', 'shipped_goods'),
                 ('invoice_method', '!=', None)),
             ], depends=['trigger'])
     amount = fields.Numeric('Amount', digits=(16, Eval('currency_digits', 2)),
@@ -234,9 +234,9 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     @fields.depends('trigger', 'invoice_method')
     def on_change_trigger(self):
         if (self.trigger == 'confirmed_sale'
-                and self.invoice_method not in ('fixed', 'percent_on_total')):
+                and self.invoice_method == 'shipped_goods'):
             return {
-                'invoice_method': 'fixed',
+                'invoice_method': None,
                 }
         return {}
 
@@ -875,7 +875,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             ], 'Invoice Method', required=True, select=True, sort=False,
         domain=[
             If(Eval('trigger', '') == 'confirmed_sale',
-                ('invoice_method', '=', 'amount'),
+                ('invoice_method', '!=', 'shipped_goods'),
                 ('invoice_method', '!=', None)),
             ],
         states=_STATES, depends=_DEPENDS + ['trigger'])
@@ -980,7 +980,6 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             'invisible': Eval('invoice_method') != 'amount',
             }, depends=['currency_digits', 'state', 'invoice_method'])
 
-
     @classmethod
     def __setup__(cls):
         super(AccountInvoiceMilestone, cls).__setup__()
@@ -1014,6 +1013,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                     },
                 })
         cls._error_messages.update({
+                'invalid_invoice_method': (
+                    'Invalid combination of invoice method on milestone '
+                    '"%(milestone)s" and sales %(sales)s.'),
                 'reset_milestone_in_closed_group': (
                     'You cannot reset to draft the Milestone "%s" because it '
                     'belongs to a closed Milestone Group.'),
@@ -1076,6 +1078,23 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     @staticmethod
     def default_days():
         return 0
+
+    @classmethod
+    def validate(cls, milestones):
+        super(AccountInvoiceMilestone, cls).validate(milestones)
+        for milestone in milestones:
+            milestone.check_sale_invoice_method()
+
+    def check_sale_invoice_method(self):
+        if self.invoice_method == 'remainder':
+            sales_shipment_invoice = [s for s in self.sales_to_invoice
+                if s.invoice_method == 'shipment']
+            if sales_shipment_invoice:
+                self.raise_user_error('invalid_invoice_method', {
+                        'milestone': self.rec_name,
+                        'sales': ', '.join('"%s"' % s.rec_name
+                            for s in sales_shipment_invoice),
+                        })
 
     @classmethod
     @ModelView.button
