@@ -989,6 +989,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 ('processing', 'succeeded'),
                 ('processing', 'failed'),
                 ('succeeded', 'failed'),  # If invoice is cancelled after post
+                ('succeeded', 'processing'),  # If invoice is draft after post
                 ('draft', 'cancel'),
                 ('confirmed', 'cancel'),
                 ('cancel', 'draft'),
@@ -1210,7 +1211,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     @classmethod
     @Workflow.transition('succeeded')
     def succeed(cls, milestones):
-        pass
+        for milestone in milestones:
+            if (milestone.invoice and milestone.invoice.invoice_date
+                    and milestone.invoice.invoice_date
+                    != milestone.invoice_date):
+                milestone.invoice_date = milestone.invoice.invoice_date
+                milestone.save()
 
     @classmethod
     @Workflow.transition('failed')
