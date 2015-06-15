@@ -37,9 +37,9 @@ def d_round(number, digits):
 class AccountInvoiceMilestoneGroupType(ModelSQL, ModelView):
     'Account Invoice Milestone Group Type'
     __name__ = 'account.invoice.milestone.group.type'
-    name = fields.Char('Name', required=True)
+    name = fields.Char('Name', required=True, translate=True)
     active = fields.Boolean('Active')
-    description = fields.Char('Description')
+    description = fields.Char('Description', translate=True)
     lines = fields.One2Many('account.invoice.milestone.type',
         'milestone_group', 'Lines')
 
