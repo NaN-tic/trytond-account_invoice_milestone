@@ -32,6 +32,8 @@
     </group>
     <label name="divisor"/>
     <field name="divisor"/>
+    <separator name="description" colspan="4"/>
+    <field name="description" colspan="4"/>
     <separator id="invoice_date_calculator" colspan="4"
         string="Invoice Date calculation"/>
     <label name="months"/>

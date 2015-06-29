@@ -238,10 +238,12 @@ Create Milestone Group Type::
     >>> fixed_type.amount = Decimal('100.0')
     >>> fixed_type.currency = currency
     >>> fixed_type.days = 5
+    >>> fixed_type.description = 'Advancement'
     >>> remainder = group_type.lines.new()
     >>> remainder.invoice_method = 'remainder'
     >>> remainder.kind = 'manual'
     >>> remainder.months = 1
+    >>> remainder.description = 'Once finished'
     >>> group_type.save()
 
 
@@ -281,9 +283,13 @@ Create a Sale with lines with service products and goods products::
     >>> fixed_milestone, = [x for x in group.milestones if x.invoice_method == 'amount']
     >>> fixed_milestone.invoice_method
     u'amount'
+    >>> fixed_milestone.description
+    u'Advancement'
     >>> fixed_milestone.amount
     Decimal('100.00')
     >>> fixed_milestone.click('confirm')
+    >>> remainder.description
+    'Once finished'
     >>> reminder.click('confirm')
     >>> group.reload()
     >>> group.total_amount
@@ -307,6 +313,9 @@ Create a Invoice for the milestone::
     >>> invoice = fixed_milestone.invoice
     >>> invoice.untaxed_amount
     Decimal('100.00')
+    >>> invoice_line, = invoice.lines
+    >>> invoice_line.description
+    u'Advancement'
     >>> group.reload()
     >>> group.invoiced_amount
     Decimal('100.000')

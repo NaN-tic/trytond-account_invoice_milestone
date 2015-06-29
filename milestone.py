@@ -220,6 +220,11 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     months = fields.Integer('Number of Months', required=True)
     weeks = fields.Integer('Number of Weeks', required=True)
     days = fields.Integer('Number of Days', required=True)
+    description = fields.Text('Description',
+        help='It will be used to prepare the description field of invoice '
+        'lines.\nYou can use the next tags and they will be replaced by these '
+        'fields from the sale\'s related to milestone: {sale_description}, '
+        '{sale_reference}.')
 
     @classmethod
     def __setup__(cls):
@@ -330,7 +335,8 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
             elif self.invoice_method == 'remainder':
                 milestone.sales_to_invoice = [sale]
 
-        for fname in ('day', 'month', 'weekday', 'months', 'weeks', 'days'):
+        for fname in ('day', 'month', 'weekday', 'months', 'weeks', 'days',
+                'description'):
             setattr(milestone, fname, getattr(self, fname))
 
         return milestone
