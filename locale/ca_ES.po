@@ -810,6 +810,10 @@ msgctxt ""
 msgid "Succeeded"
 msgstr "Amb èxit"
 
+msgctxt "model:ir.cron,name:cron_check_milestone_triggers"
+msgid "Check Milestone Triggers"
+msgstr "Comprovar disparadors de fites"
+
 msgctxt "model:ir.sequence,name:sequence_milestone"
 msgid "Milestone"
 msgstr "Fita"
@@ -854,6 +858,10 @@ msgctxt "model:res.group,name:group_invoice_milestone_admin"
 msgid "Invoice Milestone Administration"
 msgstr "Administració de fites de facturació"
 
+msgctxt "model:res.user,name:user_check_triggers"
+msgid "Cron Milestone Triggers"
+msgstr "Planificador de disparadors de fites"
+
 msgctxt "selection:account.invoice.milestone,invoice_method:"
 msgid "Amount"
 msgstr "Import"
@@ -878,10 +886,9 @@ msgctxt "selection:account.invoice.milestone,kind:"
 msgid "System"
 msgstr "Sistema"
 
-#, fuzzy
 msgctxt "selection:account.invoice.milestone,month:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone,month:"
 msgid "April"
@@ -955,10 +962,9 @@ msgctxt "selection:account.invoice.milestone,state:"
 msgid "Succeeded"
 msgstr "Amb èxit"
 
-#, fuzzy
 msgctxt "selection:account.invoice.milestone,trigger:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone,trigger:"
 msgid "On % sent"
@@ -972,10 +978,9 @@ msgctxt "selection:account.invoice.milestone,trigger:"
 msgid "On Order Fully Sent"
 msgstr "Al enviar completament la venda"
 
-#, fuzzy
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid "Friday"
@@ -1049,10 +1054,9 @@ msgctxt "selection:account.invoice.milestone.type,kind:"
 msgid "System"
 msgstr "Sistema"
 
-#, fuzzy
 msgctxt "selection:account.invoice.milestone.type,month:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone.type,month:"
 msgid "April"

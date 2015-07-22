@@ -644,7 +644,12 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
 
     @classmethod
     @ModelView.button
-    def check_triggers(cls, groups):
+    def check_triggers(cls, groups=None):
+        if groups is None:
+            company_id = Transaction().context.get('company')
+            groups = cls.search([
+                    ('company', '=', company_id),
+                    ])
         for group in groups:
             sales_from = [s for s in group.sales
                 if s.state in _TRIGGER_SALE_STATES]
