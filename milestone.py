@@ -1331,9 +1331,6 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 lines += self._get_sale_lines_invoice_lines()
             else:  # remainder
                 for sale in self.sales_to_invoice:
-                    inv_line_desc = self.calc_invoice_line_description([sale])
-                    with Transaction().set_context(
-                            milestone_invoice_line_description=inv_line_desc):
                         for sale_line in sale.lines:
                             lines += sale_line.get_invoice_line('out_invoice')
                             lines += sale_line.get_invoice_line(
