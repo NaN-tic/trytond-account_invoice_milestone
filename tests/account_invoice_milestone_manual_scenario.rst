@@ -299,7 +299,7 @@ Create a Sale with lines with service products and goods products::
     >>> group.assigned_amount
     Decimal('380.00')
     >>> group.invoiced_amount
-    Decimal('0.0')
+    Decimal('0.00')
     >>> group.merited_amount
     Decimal('0.00')
     >>> group.state
@@ -318,7 +318,7 @@ Create a Invoice for the milestone::
     u'Advancement'
     >>> group.reload()
     >>> group.invoiced_amount
-    Decimal('100.000')
+    Decimal('100.00')
     >>> group.merited_amount
     Decimal('0.00')
     >>> group.state

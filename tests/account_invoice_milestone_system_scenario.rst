@@ -304,7 +304,7 @@ Create a Sale with lines with service products and goods products::
     >>> group.assigned_amount
     Decimal('480.00')
     >>> group.invoiced_amount
-    Decimal('100.000')
+    Decimal('100.00')
 
 Confirm advancement invoice::
 
@@ -595,7 +595,7 @@ Make shipments serving less than 50% of total amount::
     >>> group.merited_amount
     Decimal('200.00')
     >>> group.invoiced_amount
-    Decimal('144.000')
+    Decimal('144.00')
     >>> sale_lines_milestone.reload()
     >>> sale_lines_milestone.state
     u'confirmed'
@@ -616,7 +616,7 @@ Make shipments serving more than 50% but less than expected::
     >>> group.merited_amount
     Decimal('430.00')
     >>> group.invoiced_amount
-    Decimal('480.000')
+    Decimal('480.00')
     >>> sale_lines_milestone.reload()
     >>> sale_lines_milestone.state
     u'processing'
@@ -753,7 +753,7 @@ Make shipments serving more than 50% but less than expected::
     >>> group.merited_amount
     Decimal('430.00')
     >>> group.invoiced_amount
-    Decimal('430.000')
+    Decimal('430.00')
     >>> sale_lines_milestone.reload()
     >>> sale_lines_milestone.state
     u'processing'
@@ -982,7 +982,7 @@ Make shipments serving 50% but only one line and less than expected::
     >>> group.merited_amount
     Decimal('290.00')
     >>> group.invoiced_amount
-    Decimal('300.000')
+    Decimal('300.00')
     >>> len(group.milestones)
     4
     >>> shipped_goods_milestone2, = [x for x in group.milestones
@@ -1032,7 +1032,7 @@ Make shipments serving the other sale line but less than expected::
     >>> group.merited_amount
     Decimal('440.00')
     >>> group.invoiced_amount
-    Decimal('480.000')
+    Decimal('480.00')
     >>> len(group.milestones)
     4
     >>> shipped_goods_milestone2.reload()
@@ -1077,7 +1077,7 @@ Cancel quantities not delivered and check nothing else invoiced::
     >>> len(group.milestones)
     4
     >>> group.invoiced_amount
-    Decimal('480.000')
+    Decimal('480.00')
     >>> group.state
     'completed'
     >>> remainder_milestone.reload()
@@ -1249,7 +1249,7 @@ Make shipments serving 50% but only one line and less than expected::
     >>> group.merited_amount
     Decimal('290.00')
     >>> group.invoiced_amount
-    Decimal('290.000')
+    Decimal('290.00')
     >>> len(group.milestones)
     4
     >>> shipped_goods_milestone2, = [x for x in group.milestones
@@ -1299,7 +1299,7 @@ Make shipments serving the other sale line but less than expected::
     >>> group.merited_amount
     Decimal('440.00')
     >>> group.invoiced_amount
-    Decimal('440.000')
+    Decimal('440.00')
     >>> len(group.milestones)
     5
     >>> shipped_goods_milestone3, = [x for x in group.milestones
@@ -1350,7 +1350,7 @@ Cancel quantities not delivered and check nothing else invoiced::
     >>> len(group.milestones)
     5
     >>> group.invoiced_amount
-    Decimal('440.000')
+    Decimal('440.00')
     >>> group.state
     'completed'
     >>> shipped_goods_milestone3.reload()

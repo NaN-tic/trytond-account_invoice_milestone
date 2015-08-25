@@ -510,7 +510,8 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         for group in groups:
             group_amounts = group._get_amounts(names)
             for fname in names:
-                result[fname][group.id] = group_amounts[fname]
+                result[fname][group.id] = group_amounts[fname].quantize(
+                    Decimal(str(10 ** - group.currency_digits)))
         return result
 
     def _get_amounts(self, names):
