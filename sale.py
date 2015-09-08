@@ -18,9 +18,10 @@ class Sale:
     milestone_group_type = fields.Many2One(
         'account.invoice.milestone.group.type', 'Milestone Group Type',
         states={
-            'readonly': ~Eval('state').in_(['draft', 'quotation']),
+            'readonly': ((Eval('invoice_method') == 'manual') |
+                ~Eval('state').in_(['draft', 'quotation'])),
             },
-        depends=['state'])
+        depends=['state', 'invoice_method'])
     milestone_group = fields.Many2One('account.invoice.milestone.group',
         'Milestone Group', select=True, domain=[
             ('company', '=', Eval('company', -1)),
@@ -28,10 +29,11 @@ class Sale:
             ('party', '=', Eval('party', -1)),
             ],
         states={
-            'readonly': (~Bool(Eval('party', 0)) |
+            'readonly': ((Eval('invoice_method') == 'manual') |
+                ~Bool(Eval('party', 0)) |
                 ~Eval('state').in_(['draft', 'quotation'])),
             },
-        depends=['company', 'currency', 'party',
+        depends=['company', 'currency', 'party', 'invoice_method',
             'milestone_group_type', 'state'])
     remainder_milestones = fields.Many2Many(
         'account.invoice.milestone-remainder-sale.sale', 'sale', 'milestone',
@@ -48,6 +50,14 @@ class Sale:
                 'invisible': ~Bool(Eval('milestone_group')),
                 }, depends=['milestone_group']),
         'get_advancement_invoices')
+
+    @fields.depends('invoice_method')
+    def on_change_invoice_method(self):
+        changes = {}
+        if self.invoice_method == 'manual':
+            changes['milestone_group_type'] = None
+            changes['milestone_group'] = None
+        return changes
 
     def get_advancement_invoices(self, name):
         if not self.milestone_group:
