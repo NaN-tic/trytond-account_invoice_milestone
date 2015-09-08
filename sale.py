@@ -73,7 +73,8 @@ class Sale:
         Return the invoice state for the sale.
         '''
         invoice_state = super(Sale, self).get_invoice_state()
-        if invoice_state == 'none' and self.milestone_group:
+        if (invoice_state == 'none' and self.milestone_group
+                and self.milestone_group.state != 'cancel'):
             invoice_state = 'waiting'
         return invoice_state
 
@@ -256,6 +257,26 @@ class SaleLine:
                     self.unit)
         return self.sale.currency.round(Decimal(str(quantity))
             * self.unit_price)
+
+    @property
+    def ignored_moves_amount(self):
+        pool = Pool()
+        Currency = pool.get('currency.currency')
+
+        ignored_amount = Decimal('0')
+        for ignored_move in self.moves_ignored:
+            sign = (Decimal('1')
+                if ignored_move.to_location.type == 'customer'
+                else Decimal('-1'))
+            ignored_amount += (Decimal(str(ignored_move.quantity))
+                * ignored_move.unit_price * sign)
+            if ignored_move.currency:
+                ignored_amount = Currency.compute(ignored_move.currency,
+                    ignored_amount, self.sale.currency, round=False)
+            elif self.sale.company:
+                ignored_amount = Currency.compute(self.sale.company.currency,
+                    ignored_amount, self.sale.currency, round=False)
+        return ignored_amount
 
     def get_invoice_line(self, invoice_type):
         res = super(SaleLine, self).get_invoice_line(invoice_type)

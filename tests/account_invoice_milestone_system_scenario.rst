@@ -492,6 +492,126 @@ Pay invoices and check group is paid::
     'paid'
 
 
+One sale invoice order quantities - Cancel everything
+-----------------------------------------------------
+
+Create a Sale with lines with service products and goods products::
+
+    >>> Sale = Model.get('sale.sale')
+    >>> SaleLine = Model.get('sale.line')
+    >>> sale = Sale()
+    >>> sale.party = customer
+    >>> sale.payment_term = payment_term
+    >>> sale.invoice_method = 'shipment'
+    >>> sale.milestone_group_type = group_type
+    >>> consumable_line = sale.lines.new()
+    >>> consumable_line.product = consumable
+    >>> consumable_line.quantity = 6.0
+    >>> consumable_line.amount
+    Decimal('180.00')
+    >>> goods_line = sale.lines.new()
+    >>> goods_line.product = product
+    >>> goods_line.quantity = 20.0
+    >>> goods_line.amount
+    Decimal('200.00')
+    >>> service_line = sale.lines.new()
+    >>> service_line.product = service
+    >>> service_line.quantity = 2.0
+    >>> service_line.amount
+    Decimal('100.00')
+    >>> sale.click('quote')
+    >>> sale.click('confirm')
+    >>> sale.click('process')
+    >>> len(sale.invoices)
+    0
+    >>> group = sale.milestone_group
+    >>> group.reload()
+    >>> group.state
+    'pending'
+    >>> len(group.milestones)
+    2
+    >>> fixed_milestone, = [x for x in group.milestones
+    ...     if x.invoice_method == 'amount']
+    >>> fixed_milestone.state
+    u'processing'
+    >>> remainder_milestone, = [x for x in group.milestones
+    ...     if x.invoice_method == 'remainder']
+    >>> remainder_milestone.state
+    u'confirmed'
+
+Cancel advancement invoice::
+
+    >>> invoice = fixed_milestone.invoice
+    >>> invoice.click('cancel')
+    >>> invoice.state
+    u'cancel'
+    >>> fixed_milestone.reload()
+    >>> fixed_milestone.state
+    u'failed'
+
+Cancel advancement milestone::
+
+    >>> fixed_milestone.click('cancel')
+    >>> fixed_milestone.state
+    u'cancel'
+    >>> group.reload()
+    >>> group.state
+    'pending'
+
+Cancel shipments::
+
+    >>> shipment, = sale.shipments
+    >>> shipment.click('cancel')
+    >>> sale.reload()
+    >>> sale.shipment_state
+    u'exception'
+    >>> shipment_exception = Wizard('sale.handle.shipment.exception', [sale])
+    >>> while shipment_exception.form.recreate_moves:
+    ...     _ = shipment_exception.form.recreate_moves.pop()
+    >>> shipment_exception.execute('handle')
+    >>> sale.reload()
+    >>> len(sale.shipments)
+    1
+    >>> sale.shipment_state
+    u'sent'
+
+Check remainder milestone::
+
+    >>> group.reload()
+    >>> len(group.milestones)
+    2
+    >>> remainder_milestone.reload()
+    >>> remainder_milestone.state
+    u'processing'
+
+Cancel remainder milestone invoice::
+
+    >>> invoice = remainder_milestone.invoice
+    >>> invoice.click('cancel')
+    >>> invoice.state
+    u'cancel'
+    >>> remainder_milestone.reload()
+    >>> remainder_milestone.state
+    u'failed'
+
+Cancel remainder milestone::
+
+    >>> remainder_milestone.click('cancel')
+    >>> remainder_milestone.state
+    u'cancel'
+    >>> group.reload()
+    >>> group.state
+    'cancel'
+
+Check sale state::
+
+    >>> sale.reload()
+    >>> sale.invoice_state
+    u'none'
+    >>> sale.state
+    u'done'
+
+
 Percentage Amount + Shipped Amount and invoice Sale Lines Milestones
 ====================================================================
 

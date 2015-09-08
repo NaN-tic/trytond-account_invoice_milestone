@@ -2,6 +2,7 @@
 # copyright notices and license terms.
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
+from functools import wraps
 
 from trytond.model import Workflow, ModelView, ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
@@ -378,6 +379,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                 ('pending', 'Pending'),
                 ('completed', 'Completed'),
                 ('paid', 'Paid'),
+                ('cancel', 'Cancelled'),
                 ], 'State'),
         'get_state')
 
@@ -427,11 +429,13 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         super(AccountInvoiceMilestoneGroup, cls).__setup__()
         cls._buttons.update({
                 'check_triggers': {
-                    'readonly': Eval('state').in_(['completed', 'paid']),
+                    'readonly': Eval('state').in_(
+                            ['completed', 'paid', 'cancel']),
                     'icon': 'tryton-executable',
                     },
                 'close': {
-                    'readonly': Eval('state').in_(['completed', 'paid']),
+                    'readonly': Eval('state').in_(
+                            ['completed', 'paid', 'cancel']),
                     'icon': 'tryton-ok',
                     },
                 })
@@ -475,6 +479,9 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
     def get_state(self, name):
         if not self.sales:
             return 'to_assign'
+        if (self.milestones
+                and all(m.state == 'cancel' for m in self.milestones)):
+            return 'cancel'
         if self.amount_to_assign > _ZERO:
             return 'to_assign'
 
@@ -528,20 +535,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         """
         pool = Pool()
         Milestone = pool.get('account.invoice.milestone')
-        Uom = pool.get('product.uom')
         SaleLine = pool.get('sale.line')
-
-        def get_ignored_moves_amount(sale_line):
-            ignored_amount = Decimal('0')
-            for ignored_move in sale_line.moves_ignored:
-                sign = (Decimal('1')
-                    if ignored_move.to_location.type == 'customer'
-                    else Decimal('-1'))
-                move_qty = Uom.compute_qty(ignored_move.uom,
-                    ignored_move.quantity, ignored_move.origin.unit)
-                ignored_amount += (Decimal(str(move_qty))
-                    * ignored_move.unit_price * sign)
-            return ignored_amount
 
         names_set = set(names)
         sales_in_live_remainders = []
@@ -563,7 +557,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
             #     for l in i.lines)
             for sale_line in sale.lines:
                 if sale.invoice_method == 'shipment':
-                    res['total_amount'] -= get_ignored_moves_amount(sale_line)
+                    res['total_amount'] -= sale_line.ignored_moves_amount
                 if (sale_line.product
                         and sale_line.product.type != 'service'):
                     res['merited_amount'] += sale_line.shipped_amount
@@ -609,7 +603,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                         assigned_sale_lines.append(sale_line.id)
                         if sale_line.sale.invoice_method == 'shipment':
                             res['assigned_amount'] += (sale_line.amount
-                                - get_ignored_moves_amount(sale_line))
+                                - sale_line.ignored_moves_amount)
                         else:
                             res['assigned_amount'] += sale_line.amount
 
@@ -661,6 +655,8 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         Milestone = pool.get('account.invoice.milestone')
 
         assert all(s.state in _TRIGGER_SALE_STATES for s in sales_from)
+        if self.state == 'cancel':
+            return
 
         todo = []
         for milestone in self.milestones:
@@ -807,6 +803,27 @@ _DESCRIPTION_STATES = {
     'readonly': ~Eval('state').in_(['draft', 'confirmed', 'processing']),
     }
 _DEPENDS = ['state']
+
+
+def process_sale(func):
+    @wraps(func)
+    def wrapper(cls, milestones):
+        pool = Pool()
+        Sale = pool.get('sale.sale')
+
+        sales_to_process = set()
+        for milestone in milestones:
+            if milestone.invoice_method == 'remainder':
+                for sale in milestone.sales_to_invoice:
+                    sales_to_process.add(sale.id)
+            elif milestone.invoice_method in ('shipped_goods', 'sale_lines'):
+                for sale_line in milestone.sale_lines_to_invoice:
+                    sales_to_process.add(sale_line.sale.id)
+        func(cls, milestones)
+        if sales_to_process:
+            with Transaction().set_context(_check_access=False):
+                Sale.process(Sale.browse(list(sales_to_process)))
+    return wrapper
 
 
 class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
@@ -1010,11 +1027,13 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 ('succeeded', 'processing'),  # If invoice is draft after post
                 ('draft', 'cancel'),
                 ('confirmed', 'cancel'),
+                ('failed', 'cancel'),
                 ('cancel', 'draft'),
                 ))
         cls._buttons.update({
                 'draft': {
-                    'invisible': Eval('state') != 'cancel',
+                    'invisible': ((Eval('state') != 'cancel')
+                        | Bool(Eval('invoice'))),
                     'icon': 'tryton-clear',
                     },
                 'confirm': {
@@ -1027,7 +1046,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                     'icon': 'tryton-ok',
                     },
                 'cancel': {
-                    'invisible': ~Eval('state').in_(['draft', 'confirmed']),
+                    'invisible': ~Eval('state').in_(
+                            ['draft', 'confirmed', 'failed']),
                     'icon': 'tryton-cancel',
                     },
                 })
@@ -1038,6 +1058,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 'reset_milestone_in_closed_group': (
                     'You cannot reset to draft the Milestone "%s" because it '
                     'belongs to a closed Milestone Group.'),
+                'reset_milestone_with_invoice': (
+                    'You cannot reset to draft the Milestone "%s" because it '
+                    'has an invoice. Duplicate it to reinvoice.'),
                 'invoice_not_done_move': ('Milestone "%(milestone)s" can not '
                     'be invoiced because its move "%(move)s is not done.'),
                 'no_advancement_product': ('An advancement product must be '
@@ -1134,6 +1157,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         for milestone in milestones:
             if milestone.group.state in ('completed', 'paid'):
                 cls.raise_user_error('reset_milestone_in_closed_group',
+                    (milestone.rec_name,))
+            if milestone.invoice:
+                cls.raise_user_error('reset_milestone_with_invoice',
                     (milestone.rec_name,))
 
     @classmethod
@@ -1242,10 +1268,32 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         pass
 
     @classmethod
+    @process_sale
     @ModelView.button
     @Workflow.transition('cancel')
-    def cancel(cls, milestiones):
-        pass
+    def cancel(cls, milestones):
+        Sale = Pool().get('sale.sale')
+
+        invoices_ignored_by_sale = {}
+        for milestone in milestones:
+            if not milestone.invoice:
+                continue
+            assert milestone.invoice.state == 'cancel'
+            for sale in milestone.invoice.sales:
+                if (milestone.invoice in sale.invoices_recreated
+                        or milestone.invoice in sale.invoices_ignored):
+                    continue
+                invoices_ignored_by_sale.setdefault(
+                    sale, set()).add(milestone.invoice.id)
+
+        to_write = []
+        for sale, invoices_ignored in invoices_ignored_by_sale.iteritems():
+            to_write.extend(([sale], {
+                    'invoices_ignored': [('add', list(invoices_ignored))],
+                    }))
+        if to_write:
+            with Transaction().set_context(_check_access=False):
+                Sale.write(*to_write)
 
     def _calc_invoice_date(self):
         pool = Pool()
@@ -1332,10 +1380,10 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                 lines += self._get_sale_lines_invoice_lines()
             else:  # remainder
                 for sale in self.sales_to_invoice:
-                        for sale_line in sale.lines:
-                            lines += sale_line.get_invoice_line('out_invoice')
-                            lines += sale_line.get_invoice_line(
-                                'out_credit_note')
+                    for sale_line in sale.lines:
+                        lines += sale_line.get_invoice_line('out_invoice')
+                        lines += sale_line.get_invoice_line(
+                            'out_credit_note')
 
             if lines:
                 amount = sum((Decimal(str(l.quantity)) * l.unit_price

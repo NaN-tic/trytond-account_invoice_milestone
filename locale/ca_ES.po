@@ -82,6 +82,14 @@ msgstr ""
 "No pot restaurar a esborrany la fita \"%s\" perquè pertany a un grup de "
 "fites tancat."
 
+msgctxt "error:account.invoice.milestone:"
+msgid ""
+"You cannot reset to draft the Milestone \"%s\" because it has an invoice. "
+"Duplicate it to reinvoice."
+msgstr ""
+"No pot restaurar a esborrany la fita \"%s\" perquè té una factura associada."
+" Duplica'l per tornar-lo a facturar."
+
 msgctxt "error:account.invoice:"
 msgid "Amount of invoice \"%s\" must be equal than its milestone \"%s\" amount"
 msgstr "L'import de la factura \"%s\" ha de ser igual que el de la seva fita \"%s\""
@@ -888,7 +896,7 @@ msgstr "Sistema"
 
 msgctxt "selection:account.invoice.milestone,month:"
 msgid ""
-msgstr ""
+msgstr " "
 
 msgctxt "selection:account.invoice.milestone,month:"
 msgid "April"
@@ -964,7 +972,7 @@ msgstr "Amb èxit"
 
 msgctxt "selection:account.invoice.milestone,trigger:"
 msgid ""
-msgstr ""
+msgstr " "
 
 msgctxt "selection:account.invoice.milestone,trigger:"
 msgid "On % sent"
@@ -980,7 +988,7 @@ msgstr "Al enviar completament la venda"
 
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid ""
-msgstr ""
+msgstr " "
 
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid "Friday"
@@ -1009,6 +1017,10 @@ msgstr "Dimarts"
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid "Wednesday"
 msgstr "Dimecres"
+
+msgctxt "selection:account.invoice.milestone.group,state:"
+msgid "Cancelled"
+msgstr "Cancel·lat"
 
 msgctxt "selection:account.invoice.milestone.group,state:"
 msgid "Completed"
@@ -1056,7 +1068,7 @@ msgstr "Sistema"
 
 msgctxt "selection:account.invoice.milestone.type,month:"
 msgid ""
-msgstr ""
+msgstr " "
 
 msgctxt "selection:account.invoice.milestone.type,month:"
 msgid "April"
