@@ -1388,7 +1388,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             if lines:
                 amount = sum((Decimal(str(l.quantity)) * l.unit_price
                         * (Decimal('1.0') if l.invoice_type == 'out_invoice'
-                            else Decimal('-1.0'))) for l in lines)
+                            else Decimal('-1.0'))) for l in lines
+                    if l.type == 'line')
                 compensation_line = self.get_compensation_line(amount)
                 if compensation_line:
                     amount += (Decimal(str(compensation_line.quantity))
@@ -1398,6 +1399,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         invoice_type = ('out_credit_note' if amount < _ZERO
             else 'out_invoice')
         for line in lines:
+            if not hasattr(line, 'invoice_type'):
+                line.invoice_type = invoice_type
             if line.invoice_type != invoice_type:
                 line.invoice_type = invoice_type
                 line.quantity *= -1
