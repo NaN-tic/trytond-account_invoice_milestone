@@ -85,8 +85,8 @@ cancelar el hito:
  * Si no se ha de volver a facturar el hito, simplemente cancelarlo
  
  * Si queremos volver a facturarlo; duplicaremos, crearemos un nuevo hito con 
- las nuevas condiciones o tendremos un hito "remanente" no cancelado en el 
- grupo, para acabar cancelando el hito.
+   las nuevas condiciones o tendremos un hito "remanente" no cancelado en el 
+   grupo, para acabar cancelando el hito.
 
 **Crear hitos manualmente**
 
