@@ -792,6 +792,10 @@ msgctxt "model:ir.action,name:act_open_sales"
 msgid "Sales"
 msgstr "Vendes"
 
+msgctxt "model:ir.action,name:act_sale_advancement_invoice_form"
+msgid "Advancement Invoices"
+msgstr "Factures d'avançament"
+
 msgctxt "model:ir.action.act_window.domain,name:act_milestone_domain_all"
 msgid "All"
 msgstr "Tots"

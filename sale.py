@@ -59,6 +59,24 @@ class Sale:
             changes['milestone_group'] = None
         return changes
 
+    @classmethod
+    def search_invoices(cls, name, clause):
+        """
+        The invoices field searcher returns all invoices (also
+        "advancement invoices") because all of them are invoices of this sale.
+        In sale they are related in two different fields to make easy identify
+        the invoice type.
+        """
+        domain = super(Sale, cls).search_invoices(name, clause)
+        return [['OR',
+            domain,
+            [
+                ('milestone_group.milestones.invoice_method', '=', 'amount'),
+                ('milestone_group.milestones.invoice.id',)
+                + tuple(clause[1:]),
+                ]
+            ]]
+
     def get_advancement_invoices(self, name):
         if not self.milestone_group:
             return

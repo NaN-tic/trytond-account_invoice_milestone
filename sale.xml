@@ -18,6 +18,18 @@
             <field name="name">sale_sale_list</field>
         </record>
 
+        <record model="ir.action.act_window" id="act_sale_advancement_invoice_form">
+            <field name="name">Advancement Invoices</field>
+            <field name="res_model">account.invoice</field>
+            <field name="domain">[('lines.origin.group.sales', 'in', Eval('active_ids'), 'account.invoice.milestone')]</field>
+        </record>
+        <record model="ir.action.keyword"
+                id="act_open_sale_advanceement_invoice_keyword1">
+            <field name="keyword">form_relate</field>
+            <field name="model">sale.sale,-1</field>
+            <field name="action" ref="act_sale_advancement_invoice_form"/>
+        </record>
+
         <!-- sale.line -->
         <record model="ir.ui.view" id="sale_line_view_tree">
             <field name="model">sale.line</field>

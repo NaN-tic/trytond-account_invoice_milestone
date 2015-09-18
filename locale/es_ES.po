@@ -643,7 +643,7 @@ msgstr "Cantidad a facturar"
 
 msgctxt "field:sale.sale,advancement_invoices:"
 msgid "Advancement Invoices"
-msgstr "Factura por avanzado"
+msgstr "Facturas por avanzado"
 
 msgctxt "field:sale.sale,milestone_group:"
 msgid "Milestone Group"
@@ -787,6 +787,10 @@ msgstr "Facturas"
 msgctxt "model:ir.action,name:act_open_sales"
 msgid "Sales"
 msgstr "Ventas"
+
+msgctxt "model:ir.action,name:act_sale_advancement_invoice_form"
+msgid "Advancement Invoices"
+msgstr "Facturas por avanzado"
 
 msgctxt "model:ir.action.act_window.domain,name:act_milestone_domain_all"
 msgid "All"
