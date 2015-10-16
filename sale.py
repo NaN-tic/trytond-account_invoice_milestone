@@ -122,16 +122,18 @@ class Sale:
     def process(cls, sales):
         # We must create milestone group before processing otherwise invoices
         # are duplicated
-        cls.create_milestones(sales)
-        super(Sale, cls).process(sales)
+        with Transaction().set_context(from_process_sales=True):
+            cls.create_milestones(sales)
+            super(Sale, cls).process(sales)
 
-        sales_by_milestone_group = {}
-        for sale in sales:
-            if sale.milestone_group and sale.state in ('processing', 'done'):
-                sales_by_milestone_group.setdefault(sale.milestone_group,
-                    []).append(sale)
-        for group, group_sales in sales_by_milestone_group.iteritems():
-            group.check_trigger_condition(group_sales)
+            sales_by_milestone_group = {}
+            for sale in sales:
+                if (sale.milestone_group and
+                        sale.state in ('processing', 'done')):
+                    sales_by_milestone_group.setdefault(sale.milestone_group,
+                        []).append(sale)
+            for group, group_sales in sales_by_milestone_group.iteritems():
+                group.check_trigger_condition(group_sales)
 
     def create_invoice(self, invoice_type):
         if self.milestone_group:

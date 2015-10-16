@@ -1068,6 +1068,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                     'Please define one in account configuration.'),
                 'missing_milestone_sequence': ('There is no milestone sequence'
                     'defined. Please define one in account configuration'),
+                'remainder_with_pending_moves': ('Milestone "%(milestone)s" '
+                    'can not be invoiced because its sale "%(sale)s is '
+                    'not completly sent.'),
                 })
 
     @fields.depends('group')
@@ -1173,6 +1176,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     def do_invoice(cls, milestones):
         pool = Pool()
         Date = pool.get('ir.date')
+        Sale = pool.get('sale.sale')
 
         today = Date.today()
         to_cancel = []
@@ -1208,6 +1212,15 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                     if sl.quantity_to_ship > 0]
             pending_sales = []
             if milestone.invoice_method == 'remainder':
+                # Create missing moves (if any)
+                if not Transaction().context.get('from_process_sales', False):
+                    Sale.process(milestone.group.sales)
+                for sale in milestone.group.sales:
+                    if sale.shipment_state in ['waiting', 'exception']:
+                        cls.raise_user_error('remainder_with_pending_moves', {
+                                'sale': sale.rec_name,
+                                'milestone': milestone.rec_name,
+                                })
                 pending_sales = [s.id for s in milestone.sales_to_invoice
                     if s.shipment_state != 'sent']
 
