@@ -4,6 +4,7 @@ from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from functools import wraps
 
+from trytond import backend
 from trytond.model import Workflow, ModelView, ModelSQL, fields
 from trytond.pool import Pool, PoolMeta
 from trytond.pyson import Bool, Eval, If
@@ -1174,6 +1175,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     @classmethod
     @ModelView.button
     def do_invoice(cls, milestones):
+        DatabaseOperationalError = backend.get('DatabaseOperationalError')
         pool = Pool()
         Date = pool.get('ir.date')
         Sale = pool.get('sale.sale')
@@ -1214,7 +1216,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             if milestone.invoice_method == 'remainder':
                 # Create missing moves (if any)
                 if not Transaction().context.get('from_process_sales', False):
-                    Sale.process(milestone.group.sales)
+                    with Transaction().new_cursor() as new_transaction:
+                        try:
+                            Sale.process(milestone.group.sales)
+                            new_transaction.cursor.commit()
+                        except DatabaseOperationalError:
+                            new_transaction.cursor.rollback()
                 for sale in milestone.group.sales:
                     if sale.shipment_state in ['waiting', 'exception']:
                         cls.raise_user_error('remainder_with_pending_moves', {
