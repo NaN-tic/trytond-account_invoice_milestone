@@ -1,15 +1,16 @@
 # The COPYRIGHT file at the top level of this repository contains the full
 # copyright notices and license terms.
-from trytond.model import ModelSQL, fields
+from trytond.model import ModelSQL, fields, Unique
 from trytond.pool import PoolMeta, Pool
 from trytond.pyson import Eval
 
 __all__ = ['Invoice', 'InvoiceLine', 'InvoiceMilestoneRelation']
-__metaclass__ = PoolMeta
 
 
 class Invoice:
     __name__ = 'account.invoice'
+    __metaclass__ = PoolMeta
+
     milestone = fields.One2One('account.invoice-account.invoice.milestone',
         'invoice', 'milestone', 'Milestone', domain=[
             ('company', '=', Eval('company', -1)),
@@ -96,6 +97,7 @@ class Invoice:
 
 class InvoiceLine:
     __name__ = 'account.invoice.line'
+    __metaclass__ = PoolMeta
 
     @classmethod
     def _get_origin(cls):
@@ -115,9 +117,10 @@ class InvoiceMilestoneRelation(ModelSQL):
     @classmethod
     def __setup__(cls):
         super(InvoiceMilestoneRelation, cls).__setup__()
+        t = cls.__table__()
         cls._sql_constraints += [
-            ('invoice_unique', 'UNIQUE(invoice)',
+            ('invoice_unique', Unique(t, t.invoice),
                 'The Invoice must be unique.'),
-            ('milestone_unique', 'UNIQUE(milestone)',
+            ('milestone_unique', Unique(t, t.milestone),
                 'The Milestone must be unique.'),
             ]

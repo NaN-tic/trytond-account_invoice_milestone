@@ -118,7 +118,7 @@
         <record model="ir.action.act_window" id="act_open_sales">
             <field name="name">Sales</field>
             <field name="res_model">sale.sale</field>
-            <field name="domain">[('milestone_group', 'in', Eval('active_ids'))]</field>
+            <field name="domain" eval="[('milestone_group', 'in', Eval('active_ids'))]" pyson="1" />
         </record>
         <record model="ir.action.keyword" id="act_open_sales_keyword1">
             <field name="keyword">form_relate</field>
@@ -129,7 +129,7 @@
         <record model="ir.action.act_window" id="act_open_invoices">
             <field name="name">Invoices</field>
             <field name="res_model">account.invoice</field>
-            <field name="domain">[('milestone_group', 'in', Eval('active_ids'))]</field>
+            <field name="domain" eval="[('milestone_group', 'in', Eval('active_ids'))]" pyson="1"/>
         </record>
         <record model="ir.action.keyword"
                 id="act_open_invoices_keyword1">
@@ -172,35 +172,35 @@
             <field name="act_window" ref="act_invoice_milestone"/>
             <field name="sequence" eval="10"/>
             <field name="name">Draft</field>
-            <field name="domain">[('state', '=', 'draft')]</field>
+            <field name="domain" eval="[('state', '=', 'draft')]" pyson="1"/>
         </record>
         <record model="ir.action.act_window.domain"
                 id="act_milestone_domain_approved">
             <field name="act_window" ref="act_invoice_milestone"/>
             <field name="sequence" eval="20"/>
             <field name="name">Confirmed</field>
-            <field name="domain">[('state', '=', 'confirmed')]</field>
+            <field name="domain" eval="[('state', '=', 'confirmed')]" pyson="1"/>
         </record>
         <record model="ir.action.act_window.domain"
                 id="act_milestone_domain_processing">
             <field name="act_window" ref="act_invoice_milestone"/>
             <field name="sequence" eval="30"/>
             <field name="name">Processing</field>
-            <field name="domain">[('state', '=', 'processing')]</field>
+            <field name="domain" eval="[('state', '=', 'processing')]" pyson="1"/>
         </record>
         <record model="ir.action.act_window.domain"
                 id="act_milestone_domain_succeeded">
             <field name="act_window" ref="act_invoice_milestone"/>
             <field name="sequence" eval="40"/>
             <field name="name">Succeeded</field>
-            <field name="domain">[('state', '=', 'succeeded')]</field>
+            <field name="domain" eval="[('state', '=', 'succeeded')]" pyson="1" />
         </record>
         <record model="ir.action.act_window.domain"
                 id="act_milestone_domain_failed">
             <field name="act_window" ref="act_invoice_milestone"/>
             <field name="sequence" eval="50"/>
             <field name="name">Failed</field>
-            <field name="domain">[('state', '=', 'failed')]</field>
+            <field name="domain" eval="[('state', '=', 'failed')]" pyson="1"/>
         </record>
         <record model="ir.action.act_window.domain"
                 id="act_milestone_domain_all">
@@ -413,7 +413,6 @@
         <!-- account.configuration -->
         <record model="ir.ui.view" id="configuration_view_form">
             <field name="model">account.configuration</field>
-            <field name="type">form</field>
             <field name="inherit" ref="account.configuration_view_form"/>
             <field name="name">configuration_form</field>
         </record>
@@ -421,7 +420,6 @@
         <!-- account.invoice -->
         <record model="ir.ui.view" id="account_invoice_view_form">
             <field name="model">account.invoice</field>
-            <field name="type">form</field>
             <field name="inherit" ref="account_invoice.invoice_view_form"/>
             <field name="name">invoice_form</field>
         </record>

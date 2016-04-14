@@ -14,8 +14,8 @@
 
     <label name="kind"/>
     <field name="kind"/>
-    <separator id="trigger" string="Trigger" colspan="4"
-        states="{'invisible': Eval('kind') != 'system'}"/>
+    <separator id="trigger" string="Trigger" colspan="4" />
+
     <label name="trigger"/>
     <field name="trigger"/>
     <label name="trigger_shipped_amount"/>
@@ -35,10 +35,8 @@
     <field name="advancement_product"/>
     <field name="sale_lines_to_invoice" colspan="4"/>
     <field name="sales_to_invoice" colspan="4"/>
-
     <group id="invoice_date_calculator" colspan="2" col="4"
-            string="Invoice Date calculation"
-            states="{'invisible': Eval('kind') != 'system'}">
+            string="Invoice Date calculation">
         <label name="months"/>
         <field name="months"/>
         <label name="month"/>

@@ -9,11 +9,11 @@ from trytond.rpc import RPC
 from trytond.transaction import Transaction
 
 __all__ = ['Sale', 'SaleLine']
-__metaclass__ = PoolMeta
 
 
 class Sale:
     __name__ = 'sale.sale'
+    __metaclass__ = PoolMeta
 
     milestone_group_type = fields.Many2One(
         'account.invoice.milestone.group.type', 'Milestone Group Type',
@@ -176,6 +176,8 @@ class Sale:
 
 class SaleLine:
     __name__ = 'sale.line'
+    __metaclass__ = PoolMeta
+
     milestones = fields.Many2Many(
         'account.invoice.milestone-to_invoice-sale.line',
         'sale_line', 'milestone', 'Milestones', readonly=True,

@@ -6,11 +6,11 @@ from trytond.pool import Pool, PoolMeta
 from trytond.transaction import Transaction
 
 __all_ = ['AccountConfiguration', 'AccountConfigurationCompany']
-__metaclass__ = PoolMeta
 
 
 class AccountConfiguration:
     __name__ = 'account.configuration'
+    __metaclass__ = PoolMeta
 
     milestone_advancement_product = fields.Function(fields.Many2One(
             'product.product', 'Milestone Advancement Product'),
@@ -48,7 +48,11 @@ class AccountConfiguration:
                 configs[0].id: None,
                 }
             if company_configs:
-                val = getattr(company_configs[0], fname)
+                if fname == 'milestone_advancement_product':
+                    name = 'milestone_adv_product'
+                else:
+                    name = fname
+                val = getattr(company_configs[0], name)
                 if isinstance(val, Model):
                     val = val.id
                 res[fname][configs[0].id] = val
@@ -67,6 +71,8 @@ class AccountConfiguration:
             company_config = company_configs[0]
         else:
             company_config = CompanyConfig(company=company_id)
+        if name == 'milestone_advancement_product':
+            name = 'milestone_adv_product'
         setattr(company_config, name, value)
         company_config.save()
 
@@ -77,7 +83,7 @@ class AccountConfigurationCompany(ModelSQL):
 
     company = fields.Many2One('company.company', 'Company', required=True,
         ondelete='CASCADE', select=True)
-    milestone_advancement_product = fields.Many2One('product.product',
+    milestone_adv_product = fields.Many2One('product.product',
         'Milestone Advancement Product')
     milestone_sequence = fields.Many2One('ir.sequence',
         'Milestone Sequence',

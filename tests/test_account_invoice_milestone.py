@@ -4,23 +4,15 @@
 import unittest
 import doctest
 import trytond.tests.test_tryton
-from trytond.tests.test_tryton import test_view, test_depends
-from trytond.tests.test_tryton import doctest_setup, doctest_teardown
+
+from trytond.tests.test_tryton import ModuleTestCase
+from trytond.tests.test_tryton import (doctest_setup, doctest_teardown,
+    doctest_checker)
 
 
 class TestCase(unittest.TestCase):
-    'Test module'
-
-    def setUp(self):
-        trytond.tests.test_tryton.install_module('account_invoice_milestone')
-
-    def test0005views(self):
-        'Test views'
-        test_view('account_invoice_milestone')
-
-    def test0006depends(self):
-        'Test depends'
-        test_depends()
+    'Test Account Invoice Milestone Module'
+    module = 'account_invoice_milestone'
 
 
 def suite():
@@ -29,9 +21,11 @@ def suite():
     suite.addTests(doctest.DocFileSuite(
             'account_invoice_milestone_manual_scenario.rst',
             setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
-            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE,
+            checker=doctest_checker))
     suite.addTests(doctest.DocFileSuite(
             'account_invoice_milestone_system_scenario.rst',
             setUp=doctest_setup, tearDown=doctest_teardown, encoding='utf-8',
-            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE))
+            optionflags=doctest.REPORT_ONLY_FIRST_FAILURE,
+            checker=doctest_checker))
     return suite

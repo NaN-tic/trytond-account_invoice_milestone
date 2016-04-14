@@ -6,14 +6,12 @@
         <!-- sale.sale -->
        <record model="ir.ui.view" id="sale_sale_view_form">
             <field name="model">sale.sale</field>
-            <field name="type">form</field>
             <field name="inherit" ref="sale.sale_view_form"/>
             <field name="name">sale_sale_form</field>
         </record>
 
         <record model="ir.ui.view" id="sale_sale_view_list">
             <field name="model">sale.sale</field>
-            <field name="type">tree</field>
             <field name="inherit" ref="sale.sale_view_tree"/>
             <field name="name">sale_sale_list</field>
         </record>
@@ -21,7 +19,9 @@
         <record model="ir.action.act_window" id="act_sale_advancement_invoice_form">
             <field name="name">Advancement Invoices</field>
             <field name="res_model">account.invoice</field>
-            <field name="domain">[('lines.origin.group.sales', 'in', Eval('active_ids'), 'account.invoice.milestone')]</field>
+            <field name="domain"
+                eval="[('lines.origin.group.sales', 'in', Eval('active_ids'), 'account.invoice.milestone')]"
+                pyson="1"/>
         </record>
         <record model="ir.action.keyword"
                 id="act_open_sale_advanceement_invoice_keyword1">

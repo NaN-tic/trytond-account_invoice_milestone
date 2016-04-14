@@ -6,7 +6,7 @@ from functools import wraps
 
 from trytond import backend
 from trytond.model import Workflow, ModelView, ModelSQL, fields
-from trytond.pool import Pool, PoolMeta
+from trytond.pool import Pool
 from trytond.pyson import Bool, Eval, If
 from trytond.transaction import Transaction
 
@@ -15,7 +15,6 @@ __all__ = ['AccountInvoiceMilestoneGroupType', 'AccountInvoiceMilestoneType',
     'AccountInvoiceMilestoneTriggerSaleLine',
     'AccountInvoiceMilestoneToInvoiceSaleLine',
     'AccountInvoiceMilestoneRemainderSale']
-__metaclass__ = PoolMeta
 
 
 _ZERO = Decimal('0.0')
@@ -242,10 +241,7 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
     def on_change_trigger(self):
         if (self.trigger == 'confirmed_sale'
                 and self.invoice_method == 'shipped_goods'):
-            return {
-                'invoice_method': None,
-                }
-        return {}
+            self.invoice_method = None
 
     @staticmethod
     def default_currency_digits():
@@ -267,14 +263,12 @@ class AccountInvoiceMilestoneType(ModelSQL, ModelView):
 
     @fields.depends('invoice_method')
     def on_change_invoice_method(self):
-        res = {}
         if self.invoice_method != 'fixed':
-            res['amount'] = _ZERO
-            res['currency'] = None
+            self.amount = _ZERO
+            self.currency = None
         if self.invoice_method != 'percent_on_total':
-            res['percentage'] = _ZERO
-            res['divisor'] = _ZERO
-        return res
+            self.percentage = _ZERO
+            self.divisor = _ZERO
 
     @fields.depends('divisor')
     def on_change_with_percentage(self):
@@ -454,7 +448,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
 
     @staticmethod
     def default_company():
-        return Transaction().context.get('company')
+        return Transaction().context.get('company') or None
 
     @staticmethod
     def default_currency():
@@ -1074,6 +1068,16 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
                     'not completly sent.'),
                 })
 
+    @classmethod
+    def view_attributes(cls):
+        return [
+            ('/form//separator[@id="trigger"]', 'states',
+                {'invisible': Eval('kind') != 'system'}),
+
+            ('/form//group[@id="invoice_date_calculator"]', 'states',
+                {'invisible': Eval('kind') != 'system'}),
+            ]
+
     @fields.depends('group')
     def on_change_with_company(self, name=None):
         return (self.group.company.id if self.group and self.group.company
@@ -1216,7 +1220,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             if milestone.invoice_method == 'remainder':
                 # Create missing moves (if any)
                 if not Transaction().context.get('from_process_sales', False):
-                    with Transaction().new_cursor() as new_transaction:
+                    with Transaction().connection.new_cursor() \
+                            as new_transaction:
                         try:
                             Sale.process(milestone.group.sales)
                             new_transaction.cursor.commit()
