@@ -82,6 +82,15 @@
             <field name="group" ref="group_invoice_milestone"/>
         </record>
 
+        <record model="ir.model.access" id="access_invoice_milestone_group">
+            <field name="model"
+                search="[('model', '=', 'account.invoice.milestone.group')]"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+
         <record model="ir.model.access"
                 id="access_invoice_milestone_group_milestone">
             <field name="model"
@@ -252,6 +261,14 @@
             <field name="button" ref="milestone_cancel_button"/>
             <field name="group" ref="group_invoice_milestone"/>
         </record>
+        <record model="ir.model.access" id="access_invoice_milestone">
+            <field name="model"
+                search="[('model', '=', 'account.invoice.milestone')]"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
 
         <record model="ir.model.access" id="access_invoice_milestone_milestone">
             <field name="model"
@@ -317,6 +334,16 @@
         </record>
 
         <record model="ir.model.access"
+                id="access_invoice_milestone_group_type">
+            <field name="model"
+                search="[('model', '=', 'account.invoice.milestone.group.type')]"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+
+        <record model="ir.model.access"
                 id="access_invoice_milestone_group_type_admin">
             <field name="model"
                 search="[('model', '=', 'account.invoice.milestone.group.type')]"/>
@@ -378,6 +405,16 @@
             <field name="view" ref="invoice_milestone_type_view_form"/>
             <field name="act_window" ref="act_invoice_milestone_type"/>
         </record>
+
+        <record model="ir.model.access" id="access_invoice_milestone_type">
+            <field name="model"
+                search="[('model', '=', 'account.invoice.milestone.type')]"/>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_delete" eval="False"/>
+        </record>
+
 
         <record model="ir.model.access" id="access_invoice_milestone_type_admin">
             <field name="model"
