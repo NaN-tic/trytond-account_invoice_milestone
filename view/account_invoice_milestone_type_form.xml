@@ -6,8 +6,7 @@
     <field name="kind"/>
     <label name="milestone_group"/>
     <field name="milestone_group"/>
-    <separator id="trigger" string="Trigger" colspan="4"
-         states="{'invisible': Eval('kind') != 'system'}"/>
+    <separator id="trigger" string="Trigger" colspan="4"/>
     <label name="trigger"/>
     <field name="trigger"/>
     <label name="trigger_shipped_amount"/>

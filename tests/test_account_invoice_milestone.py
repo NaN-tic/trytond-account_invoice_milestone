@@ -10,7 +10,7 @@ from trytond.tests.test_tryton import (doctest_setup, doctest_teardown,
     doctest_checker)
 
 
-class TestCase(unittest.TestCase):
+class TestCase(ModuleTestCase):
     'Test Account Invoice Milestone Module'
     module = 'account_invoice_milestone'
 

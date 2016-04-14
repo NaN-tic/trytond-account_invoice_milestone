@@ -9,7 +9,7 @@
         <label name="milestone_group_type"/>
         <field name="milestone_group_type"/>
     </xpath>
-    <xpath expr="/form/notebook/page[@id='invoices']"
+    <xpath expr="/form/notebook/page[@name='invoices']"
             position="inside">
         <field name="advancement_invoices" colspan="4"/>
     </xpath>

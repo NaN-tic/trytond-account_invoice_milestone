@@ -1536,6 +1536,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         pool = Pool()
         Config = pool.get('account.configuration')
         config = Config.get_singleton()
+        if not config:
+            return
         if not config.milestone_advancement_product:
             cls.raise_user_error('no_advancement_product')
         return config.milestone_advancement_product.id
