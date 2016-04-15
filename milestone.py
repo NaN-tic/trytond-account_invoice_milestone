@@ -575,14 +575,14 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                             # milestone group
                             continue
 
-                        res['invoiced_amount'] += inv_line.amount * sign
+                        res['invoiced_amount'] += inv_line.amount
 
                         if (milestone.invoice_method == 'remainder'
                                 and isinstance(inv_line.origin, SaleLine)
                                 and (inv_line.origin.sale.id
                                     not in sales_in_live_remainders)):
                             # not advancement invoice/compensation
-                            res['assigned_amount'] += inv_line.amount * sign
+                            res['assigned_amount'] += inv_line.amount
 
                 if ({'amount_to_assign', 'assigned_amount'} & names_set
                         and milestone.invoice_method
