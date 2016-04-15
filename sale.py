@@ -227,18 +227,14 @@ class SaleLine:
                     quantity += Uom.compute_qty(move.uom, move.quantity,
                         self.unit)
 
-        invoice_type = ('out_invoice' if self.quantity >= 0
-            else 'out_credit_note')
         skip_ids = set(l.id for i in self.sale.invoices_recreated
             for l in i.lines)
         for invoice_line in self.invoice_lines:
             if invoice_line.type != 'line':
                 continue
             if invoice_line.id not in skip_ids:
-                sign = (1.0 if invoice_type == invoice_line.invoice_type
-                    else -1.0)
                 quantity -= Uom.compute_qty(invoice_line.unit,
-                    sign * invoice_line.quantity, self.unit)
+                    invoice_line.quantity, self.unit)
 
         rounding = self.unit.rounding if self.unit else 0.01
         return Uom.round(quantity, rounding)
@@ -298,8 +294,8 @@ class SaleLine:
                     ignored_amount, self.sale.currency, round=False)
         return ignored_amount
 
-    def get_invoice_line(self, invoice_type):
-        res = super(SaleLine, self).get_invoice_line(invoice_type)
+    def get_invoice_line(self):
+        res = super(SaleLine, self).get_invoice_line()
 
         line_description = (
             Transaction().context.get('milestone_invoice_line_description'))

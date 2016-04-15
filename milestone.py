@@ -1405,9 +1405,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             else:  # remainder
                 for sale in self.sales_to_invoice:
                     for sale_line in sale.lines:
-                        lines += sale_line.get_invoice_line('out_invoice')
-                        lines += sale_line.get_invoice_line(
-                            'out_credit_note')
+                        lines += sale_line.get_invoice_line()
 
             if lines:
                 amount = sum((Decimal(str(l.quantity)) * l.unit_price
@@ -1469,13 +1467,11 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             if (self.invoice_method == 'shipped_goods'
                     and sale_line.shipped_amount <= 0):
                 continue
-            invoice_type = ('out_credit_note' if sale_line.quantity < 0.0
-                else 'out_invoice')
             inv_line_desc = self.calc_invoice_line_description(
                 [sale_line.sale])
             with Transaction().set_context(
                     milestone_invoice_line_description=inv_line_desc):
-                invoice_lines += sale_line.get_invoice_line(invoice_type)
+                invoice_lines += sale_line.get_invoice_line()
         return invoice_lines
 
     def calc_invoice_line_description(self, sales):
