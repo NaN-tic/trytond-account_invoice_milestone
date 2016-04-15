@@ -133,10 +133,10 @@ class Sale:
             for group, group_sales in sales_by_milestone_group.iteritems():
                 group.check_trigger_condition(group_sales)
 
-    def create_invoice(self, invoice_type):
+    def create_invoice(self):
         if self.milestone_group:
             return
-        return super(Sale, self).create_invoice(invoice_type)
+        return super(Sale, self).create_invoice()
 
     @classmethod
     def copy(cls, sales, default=None):

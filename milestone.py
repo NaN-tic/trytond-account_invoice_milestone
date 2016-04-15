@@ -100,8 +100,7 @@ class AccountInvoiceMilestoneGroupType(ModelSQL, ModelView):
         group.company = sale.company
         group.currency = sale.currency
         group.party = sale.party
-        group.sales = []
-        group.sales.append(sale)
+        group.sales = [sale]
         return group
 
 
