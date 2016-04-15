@@ -53,11 +53,9 @@ class Sale:
 
     @fields.depends('invoice_method')
     def on_change_invoice_method(self):
-        changes = {}
         if self.invoice_method == 'manual':
-            changes['milestone_group_type'] = None
-            changes['milestone_group'] = None
-        return changes
+            self.milestone_group_type = None
+            self.milestone_group = None
 
     @classmethod
     def search_invoices(cls, name, clause):
