@@ -575,9 +575,6 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                             # milestone group
                             continue
 
-                        sign = (Decimal('1.0')
-                            if inv_line.invoice_type == 'out_invoice'
-                            else Decimal('-1.0'))
                         res['invoiced_amount'] += inv_line.amount * sign
 
                         if (milestone.invoice_method == 'remainder'
@@ -1393,12 +1390,10 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         lines = []
         amount = _ZERO
         if self.invoice_method == 'amount':
-            for invoice_type in ('out_invoice', 'out_credit_note'):
-                line = self._get_advancement_invoice_line(invoice_type)
-                if line:
-                    amount += (self.amount if invoice_type == 'out_invoice'
-                        else -self.amount)
-                    lines.append(line)
+            line = self._get_advancement_invoice_line()
+            if line:
+                amount += self.amount
+                lines.append(line)
         else:
             if self.invoice_method in ('shipped_goods', 'sale_lines'):
                 lines += self._get_sale_lines_invoice_lines()
@@ -1409,17 +1404,14 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
             if lines:
                 amount = sum((Decimal(str(l.quantity)) * l.unit_price
-                        * (Decimal('1.0') if l.invoice_type == 'out_invoice'
-                            else Decimal('-1.0'))) for l in lines
-                    if l.type == 'line')
+                         for l in lines if l.type == 'line'), Decimal(0))
                 compensation_line = self.get_compensation_line(amount)
                 if compensation_line:
                     amount += (Decimal(str(compensation_line.quantity))
                         * compensation_line.unit_price)
                     lines.append(compensation_line)
 
-        invoice_type = ('out_credit_note' if amount < _ZERO
-            else 'out_invoice')
+        invoice_type = 'out'
         for line in lines:
             if not hasattr(line, 'invoice_type'):
                 line.invoice_type = invoice_type
@@ -1429,15 +1421,11 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
         return invoice_type, lines
 
-    def _get_advancement_invoice_line(self, invoice_type):
+    def _get_advancement_invoice_line(self):
         pool = Pool()
         InvoiceLine = pool.get('account.invoice.line')
 
         if self.state != 'confirmed' or self.invoice_method != 'amount':
-            return
-        if invoice_type == 'out_credit_note' and self.amount > _ZERO:
-            return
-        if invoice_type == 'out_invoice' and self.amount < _ZERO:
             return
 
         product = self.advancement_product
@@ -1445,14 +1433,14 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
         with Transaction().set_user(0, set_context=True):
             invoice_line = InvoiceLine()
-        invoice_line.invoice_type = invoice_type
+        invoice_line.invoice_type = 'out'
         invoice_line.party = self.party
         invoice_line.type = 'line'
         invoice_line.sequence = 1
 
         invoice_line.product = product
         invoice_line.description = self.calc_invoice_line_description(sales)
-        invoice_line.quantity = 1.0
+        invoice_line.quantity = 1.0 if self.amount > _ZERO else -1.0
         invoice_line.unit = product.default_uom
         for key, value in invoice_line.on_change_product().iteritems():
             setattr(invoice_line, key, value)
@@ -1510,7 +1498,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
         with Transaction().set_user(0, set_context=True):
             invoice_line = InvoiceLine()
-        invoice_line.invoice_type = 'out_invoice'
+        invoice_line.invoice_type = 'out'
         invoice_line.type = 'line'
         invoice_line.sequence = 1
         invoice_line.description = ''
@@ -1519,8 +1507,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         product = self.advancement_product
         invoice_line.product = product
         invoice_line.unit = product.default_uom
-        for key, value in invoice_line.on_change_product().iteritems():
-            setattr(invoice_line, key, value)
+        invoice_line.on_change_product()
         invoice_line.quantity = -1.0
         invoice_line.unit_price = amount
 
