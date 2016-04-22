@@ -236,8 +236,9 @@ class SaleLine:
                 quantity -= Uom.compute_qty(invoice_line.unit,
                     invoice_line.quantity, self.unit)
 
-        rounding = self.unit.rounding if self.unit else 0.01
-        return Uom.round(quantity, rounding)
+        if self.unit:
+            quantity = self.unit.round(quantity)
+        return quantity
 
     @property
     def quantity_to_ship(self):
@@ -258,7 +259,7 @@ class SaleLine:
             if move.state == 'done' or move.id in ignored_ids:
                 quantity -= Uom.compute_qty(move.uom, move.quantity,
                     self.unit)
-        return Uom.round(quantity, self.unit.rounding)
+        return self.unit.round(quantity)
 
     @property
     def shipped_amount(self):
