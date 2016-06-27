@@ -1442,8 +1442,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         invoice_line.description = self.calc_invoice_line_description(sales)
         invoice_line.quantity = 1.0 if self.amount > _ZERO else -1.0
         invoice_line.unit = product.default_uom
-        for key, value in invoice_line.on_change_product().iteritems():
-            setattr(invoice_line, key, value)
+        invoice_line.on_change_product()
         invoice_line.unit_price = abs(self.amount)
         invoice_line.origin = self
 
