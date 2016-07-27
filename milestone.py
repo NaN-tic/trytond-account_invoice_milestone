@@ -1216,7 +1216,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             if milestone.invoice_method == 'remainder':
                 # Create missing moves (if any)
                 if not Transaction().context.get('from_process_sales', False):
-                    with Transaction().connection.new_cursor() \
+                    with Transaction().new_transaction() \
                             as new_transaction:
                         try:
                             Sale.process(milestone.group.sales)
