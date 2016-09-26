@@ -646,52 +646,56 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         Milestone = pool.get('account.invoice.milestone')
 
         assert all(s.state in _TRIGGER_SALE_STATES for s in sales_from)
-        if self.state == 'cancel':
+
+        if all(m.state == 'cancel' for m in self.milestones):
             return
 
         todo = []
         for milestone in self.milestones:
-            if (milestone.state != 'confirmed' or milestone.kind == 'manual'
+            if milestone.trigger_lines:
+                if (milestone.state != 'confirmed'
+                    or milestone.kind == 'manual'
                     or milestone.invoice):
-                continue
-            if milestone.trigger == 'confirmed_sale':
-                # Milestones on order confirmed
-                if all(l.sale in sales_from for l in milestone.trigger_lines):
-                    todo.append(milestone)
-            elif milestone.trigger == 'sent_sale':
-                # Milestones on order done
-                if all((l.sale in sales_from
+                    continue
+                if milestone.trigger == 'confirmed_sale':
+                    # Milestones on order confirmed
+                    if all(l.sale in sales_from
+                        for l in milestone.trigger_lines):
+                        todo.append(milestone)
+                elif milestone.trigger == 'sent_sale':
+                    # Milestones on order done
+                    if all((l.sale in sales_from
                             and l.sale.shipment_state == 'sent')
                         for l in milestone.trigger_lines):
-                    todo.append(milestone)
-            # trigger == 'shipped_amount'
-            elif milestone.trigger_shipped_amount == _ZERO:
-                if all((l.sale in sales_from
+                        todo.append(milestone)
+                # trigger == 'shipped_amount'
+                elif milestone.trigger_shipped_amount == _ZERO:
+                    if all((l.sale in sales_from
                             and l.sale.state in ('processing', 'done'))
                         for l in milestone.trigger_lines):
-                    todo.append(milestone)
-            elif milestone.trigger_shipped_amount == Decimal('1.0'):
-                # Milestones on order sent
-                if all(l.move_done for l in milestone.trigger_lines):
-                    todo.append(milestone)
-            else:
-                # compute as shipped lines the lines without product or with
-                # service product only if line's sale is processing or done
-                shipped_amount = total_amount = _ZERO
-                for sale_line in milestone.trigger_lines:
-                    if (sale_line.product
-                            and sale_line.product.type != 'service'
-                            and sale_line.amount != _ZERO):
-                        shipped_amount += sale_line.shipped_amount
-                        total_amount += sale_line.amount
-                    else:
-                        if sale_line.sale.state in ('processing', 'done'):
-                            shipped_amount += sale_line.amount
-                        total_amount += sale_line.amount
-                shipped_percentage = d_round(shipped_amount / total_amount,
-                    Milestone.trigger_shipped_amount.digits[1])
-                if shipped_percentage >= milestone.trigger_shipped_amount:
-                    todo.append(milestone)
+                        todo.append(milestone)
+                elif milestone.trigger_shipped_amount == Decimal('1.0'):
+                    # Milestones on order sent
+                    if all(l.move_done for l in milestone.trigger_lines):
+                        todo.append(milestone)
+                else:
+                    # compute as shipped lines the lines without product or with
+                    # service product only if line's sale is processing or done
+                    shipped_amount = total_amount = _ZERO
+                    for sale_line in milestone.trigger_lines:
+                        if (sale_line.product
+                                and sale_line.product.type != 'service'
+                                and sale_line.amount != _ZERO):
+                            shipped_amount += sale_line.shipped_amount
+                            total_amount += sale_line.amount
+                        else:
+                            if sale_line.sale.state in ('processing', 'done'):
+                                shipped_amount += sale_line.amount
+                            total_amount += sale_line.amount
+                    shipped_percentage = d_round(shipped_amount / total_amount,
+                        Milestone.trigger_shipped_amount.digits[1])
+                    if shipped_percentage >= milestone.trigger_shipped_amount:
+                        todo.append(milestone)
 
         if todo:
             Milestone.do_invoice(todo)
