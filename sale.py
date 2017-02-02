@@ -16,14 +16,14 @@ class Sale:
     __metaclass__ = PoolMeta
 
     milestone_group_type = fields.Many2One(
-        'account.invoice.milestone.group.type', 'Milestone Group Type',
+        'account.invoice.milestone.group.type', 'Milestone Group Type (old)',
         states={
             'readonly': ((Eval('invoice_method') == 'manual') |
                 ~Eval('state').in_(['draft', 'quotation'])),
             },
         depends=['state', 'invoice_method'])
     milestone_group = fields.Many2One('account.invoice.milestone.group',
-        'Milestone Group', select=True, domain=[
+        'Milestone Group (old)', select=True, domain=[
             ('company', '=', Eval('company', -1)),
             ('currency', '=', Eval('currency', -1)),
             ('party', '=', Eval('party', -1)),
@@ -178,7 +178,7 @@ class SaleLine:
 
     milestones = fields.Many2Many(
         'account.invoice.milestone-to_invoice-sale.line',
-        'sale_line', 'milestone', 'Milestones', readonly=True,
+        'sale_line', 'milestone', 'Milestones (old)', readonly=True,
         states={
             'invisible': Eval('type', 'line') != 'line',
             }, depends=['type'])

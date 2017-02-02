@@ -12,7 +12,7 @@ class Invoice:
     __metaclass__ = PoolMeta
 
     milestone = fields.One2One('account.invoice-account.invoice.milestone',
-        'invoice', 'milestone', 'Milestone', domain=[
+        'invoice', 'milestone', 'Milestone (old)', domain=[
             ('company', '=', Eval('company', -1)),
             ('party', '=', Eval('party', -1)),
             ], readonly=True, depends=['company', 'party'])
