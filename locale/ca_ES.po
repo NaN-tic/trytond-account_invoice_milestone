@@ -654,10 +654,6 @@ msgctxt "field:sale.sale,advancement_invoices:"
 msgid "Advancement Invoices"
 msgstr "Factures d'avançament"
 
-msgctxt "field:sale.sale,milestone_group:"
-msgid "Milestone Group"
-msgstr "Grup de fites"
-
 msgctxt "field:sale.sale,remainder_milestones:"
 msgid "Remainder Milestones"
 msgstr "Fites romanent"

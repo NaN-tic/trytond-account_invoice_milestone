@@ -653,13 +653,6 @@ msgctxt "field:sale.sale,advancement_invoices:"
 msgid "Advancement Invoices"
 msgstr "Facturas por avanzado"
 
-msgctxt "field:sale.sale,milestone_group:"
-msgid "Milestone Group"
-msgstr "Grupo de hitos"
-
-msgctxt "field:sale.sale,milestone_group_type:"
-msgid "Milestone Group Type"
-msgstr "Tipo de grupo de hitos"
 
 msgctxt "field:sale.sale,remainder_milestones:"
 msgid "Remainder Milestones"
