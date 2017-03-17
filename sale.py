@@ -17,11 +17,7 @@ class Sale:
 
     milestone_group_type = fields.Many2One(
         'account.invoice.milestone.group.type', 'Milestone Group Type (old)',
-        states={
-            'readonly': ((Eval('invoice_method') == 'manual') |
-                ~Eval('state').in_(['draft', 'quotation'])),
-            },
-        depends=['state', 'invoice_method'])
+        readonly=True)
     milestone_group = fields.Many2One('account.invoice.milestone.group',
         'Milestone Group (old)', select=True, domain=[
             ('company', '=', Eval('company', -1)),
