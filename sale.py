@@ -19,18 +19,12 @@ class Sale:
         'account.invoice.milestone.group.type', 'Milestone Group Type (old)',
         readonly=True)
     milestone_group = fields.Many2One('account.invoice.milestone.group',
-        'Milestone Group (old)', select=True, domain=[
+        'Milestone Group (old)', readonly=True, select=True, domain=[
             ('company', '=', Eval('company', -1)),
             ('currency', '=', Eval('currency', -1)),
             ('party', '=', Eval('party', -1)),
             ],
-        states={
-            'readonly': ((Eval('invoice_method') == 'manual') |
-                ~Bool(Eval('party', 0)) |
-                ~Eval('state').in_(['draft', 'quotation'])),
-            },
-        depends=['company', 'currency', 'party', 'invoice_method',
-            'milestone_group_type', 'state'])
+        depends=['company', 'currency', 'party'])
     remainder_milestones = fields.Many2Many(
         'account.invoice.milestone-remainder-sale.sale', 'sale', 'milestone',
         'Remainder Milestones', domain=[
