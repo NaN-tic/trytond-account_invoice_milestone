@@ -41,29 +41,6 @@ class Sale:
                 }, depends=['milestone_group']),
         'get_advancement_invoices')
 
-    @fields.depends('invoice_method')
-    def on_change_invoice_method(self):
-        if self.invoice_method == 'manual':
-            self.milestone_group_type = None
-            self.milestone_group = None
-
-    @classmethod
-    def search_invoices(cls, name, clause):
-        """
-        The invoices field searcher returns all invoices (also
-        "advancement invoices") because all of them are invoices of this sale.
-        In sale they are related in two different fields to make easy identify
-        the invoice type.
-        """
-        domain = super(Sale, cls).search_invoices(name, clause)
-        return [['OR',
-            domain,
-            [
-                ('milestone_group.milestones.invoice_method', '=', 'amount'),
-                ('milestone_group.milestones.invoice.id',)
-                + tuple(clause[1:]),
-                ]
-            ]]
 
     def get_advancement_invoices(self, name):
         if not self.milestone_group:
@@ -83,83 +60,6 @@ class Sale:
                 and self.milestone_group.state != 'cancel'):
             invoice_state = 'waiting'
         return invoice_state
-
-    @classmethod
-    def create_milestones(cls, sales):
-        pool = Pool()
-        Milestone = pool.get('account.invoice.milestone')
-
-        milestones_to_confirm = []
-        sales_by_milestone_group = {}
-        for sale in sales:
-            group = None
-            if sale.milestone_group:
-                group = sale.milestone_group
-            elif sale.milestone_group_type:
-                group = sale.milestone_group_type.compute_milestone_group(sale)
-            if group:
-                milestones_to_confirm += [m for m in group.milestones
-                    if m.state == 'draft']
-                sales_by_milestone_group.setdefault(group, []).append(sale)
-
-        Milestone.confirm(milestones_to_confirm)
-        for group, group_sales in sales_by_milestone_group.iteritems():
-            group.check_trigger_condition(group_sales)
-
-    @classmethod
-    def process(cls, sales):
-        # We must create milestone group before processing otherwise invoices
-        # are duplicated
-        with Transaction().set_context(from_process_sales=True):
-            cls.create_milestones(sales)
-            super(Sale, cls).process(sales)
-
-            sales_by_milestone_group = {}
-            for sale in sales:
-                if (sale.milestone_group and
-                        sale.state in ('processing', 'done')):
-                    sales_by_milestone_group.setdefault(sale.milestone_group,
-                        []).append(sale)
-            for group, group_sales in sales_by_milestone_group.iteritems():
-                group.check_trigger_condition(group_sales)
-
-    def create_invoice(self):
-        if self.milestone_group:
-            return
-        return super(Sale, self).create_invoice()
-
-    @classmethod
-    def copy(cls, sales, default=None):
-        if default is None:
-            default = {}
-        else:
-            default = default.copy()
-        default.setdefault('remainder_milestones', [])
-        default.setdefault('milestone_group', None)
-        return super(Sale, cls).copy(sales, default=default)
-
-    @classmethod
-    def write(cls, *args):
-        actions = iter(args)
-        args = []
-        for records, values in zip(actions, actions):
-            if 'milestone_group' not in values:
-                args.extend((records, values))
-                continue
-
-            records_wo_remainder_milestones = [r for r in records
-                if not r.remainder_milestones]
-            for record in records:
-                if record in records_wo_remainder_milestones:
-                    continue
-                new_values = values.copy()
-                new_values['remainder_milestones'] = [
-                    ('remove', [m.id for m in record.remainder_milestones]),
-                    ]
-                args.extend(([record], new_values))
-            if records_wo_remainder_milestones:
-                args.extend((records_wo_remainder_milestones, values))
-        super(Sale, cls).write(*args)
 
 
 class SaleLine:
@@ -294,12 +194,3 @@ class SaleLine:
             for l in res:
                 l.description = line_description
         return res
-
-    @classmethod
-    def copy(cls, lines, default=None):
-        if default is None:
-            default = {}
-        else:
-            default = default.copy()
-        default.setdefault('milestones', [])
-        return super(SaleLine, cls).copy(lines, default=default)

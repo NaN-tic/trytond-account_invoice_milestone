@@ -532,7 +532,7 @@
         </record>
 
         <!-- cron task -->
-        <record model="res.user" id="user_check_triggers">
+        <!-- <record model="res.user" id="user_check_triggers">
             <field name="login">user_cron_milestone_triggers</field>
             <field name="name">Cron Milestone Triggers</field>
             <field name="signature"></field>
@@ -555,6 +555,6 @@
             <field name="repeat_missed" eval="False"/>
             <field name="model">account.invoice.milestone.group</field>
             <field name="function">check_triggers</field>
-        </record>
+        </record> -->
      </data>
 </tryton>
