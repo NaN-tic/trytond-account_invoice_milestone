@@ -532,7 +532,7 @@
         </record>
 
         <!-- cron task -->
-        <!-- <record model="res.user" id="user_check_triggers">
+        <record model="res.user" id="user_check_triggers">
             <field name="login">user_cron_milestone_triggers</field>
             <field name="name">Cron Milestone Triggers</field>
             <field name="signature"></field>
@@ -543,7 +543,7 @@
             <field name="user" ref="user_check_triggers"/>
             <field name="group" ref="group_invoice_milestone"/>
         </record>
-
+        <!--
         <record model="ir.cron" id="cron_check_milestone_triggers">
             <field name="name">Check Milestone Triggers</field>
             <field name="request_user" ref="res.user_admin"/>
