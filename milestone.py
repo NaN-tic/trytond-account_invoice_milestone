@@ -997,7 +997,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     days = fields.Integer('Number of Days', required=True,
         states=_STATES_INV_DATE_CALC, depends=_DEPENDS_INV_DATE_CALC)
     invoice_date = fields.Date('Invoice Date', states={
-            'readonly': ~Eval('state', '').in_(['draft', 'confirmed']),
+            'readonly': ((~Eval('state', '').in_(['draft', 'confirmed'])) |
+                ~((Eval('invoice_method') == 'remainder') &
+                    (Bool(Eval('is_sale_done'))))),
             'required': Eval('state', '').in_(['processing', 'succeeded']),
             }, depends=['state'])
     planned_invoice_date = fields.Date('Planned Invoice Date')
@@ -1019,6 +1021,8 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
             'required': Eval('invoice_method') == 'amount',
             'invisible': Eval('invoice_method') != 'amount',
             }, depends=['currency_digits', 'state', 'invoice_method'])
+    is_sale_done = fields.Function(fields.Boolean('Is sale done'),
+        'get_sale_state', searcher='search_sale_state')
 
     @classmethod
     def __setup__(cls):
@@ -1083,9 +1087,23 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         return (self.group.company.id if self.group and self.group.company
             else None)
 
+    def get_sale_state(self, name=None):
+
+        for sale in self.sales_to_invoice:
+            if sale.state != 'done':
+                return False
+        return True
+
     @classmethod
     def search_company(cls, name, clause):
         return [('group.company',) + tuple(clause[1:])]
+
+    @classmethod
+    def search_sale_state(cls, name, clause):
+        operator = '!='
+        if clause[2]:
+            operator = '='
+        return [('sales_to_invoice.state', operator, 'done')]
 
     @fields.depends('group')
     def on_change_with_currency_digits(self, name=None):

@@ -214,6 +214,22 @@
             <field name="model"
                 search="[('model', '=', 'account.invoice.milestone')]"/>
         </record>
+        
+        <!-- Check remainders -->
+        <record model="ir.action.act_window" id="act_invoice_milestone_remainders">
+            <field name="name">Milestones to Check</field>
+            <field name="res_model">account.invoice.milestone</field>
+            <field name="domain">[('invoice_method', '=', 'remainder'),
+                ('is_sale_done', '=', False),
+                ('invoice_date', '!=', None)]</field>
+        </record>
+        <record model="ir.action.act_window.view"
+                id="act_invoice_milestone_remainders_view2">
+            <field name="act_window" ref="act_invoice_milestone_remainders"/>
+            <field name="sequence" eval="20"/>
+            <field name="view" ref="invoice_milestone_view_list"/>
+        </record>
+
         <record model="ir.model.button-res.group"
                 id="milestone_draft_button_group_milestone">
             <field name="button" ref="milestone_draft_button"/>
@@ -441,6 +457,8 @@
 
         <menuitem id="menu_milestone" name="Milestones"
             parent="account.menu_account" sequence="30"/>
+
+
         <record model="ir.ui.menu-res.group"
                 id="menu_milestone_group_invoice_milestone">
             <field name="menu" ref="menu_milestone"/>
@@ -450,6 +468,10 @@
         <menuitem action="act_invoice_milestone_group"
             id="menu_invoice_milestone_group"
             parent="menu_milestone" sequence="10"/>
+
+        <menuitem action="act_invoice_milestone_remainders"
+            id="menu_invoice_milestone_remainders"
+            parent="menu_invoice_milestone_group" sequence="10"/>
 
         <menuitem action="act_invoice_milestone"
             id="menu_invoice_milestone"

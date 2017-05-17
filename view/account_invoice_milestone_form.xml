@@ -6,6 +6,7 @@
     <field name="code"/>
     <label name="group"/>
     <field name="group"/>
+
     <label name="party"/>
     <field name="party"/>
     <newline/>

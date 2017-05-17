@@ -5,11 +5,13 @@
     <field name="code"/>
     <field name="party"/>
     <field name="currency"/>
+    <!--
     <field name="total_amount"/>
     <field name="merited_amount"/>
     <field name="amount_to_assign"/>
-    <field name="amount_to_invoice"/>
+    <field name="amount_to_invoice"/> 
     <field name="state"/>
+-->
     <field name="company" tree_invisible="1"/>
     <button name="check_triggers" string="Check Triggers" tree_invisible="1"/>
 </tree>

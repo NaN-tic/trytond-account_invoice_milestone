@@ -1,4 +1,4 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -257,6 +257,10 @@ msgstr "Data factura"
 msgctxt "field:account.invoice.milestone,invoice_method:"
 msgid "Invoice Method"
 msgstr "Mètode de facturació"
+
+msgctxt "field:account.invoice.milestone,is_sale_done:"
+msgid "Is sale done"
+msgstr ""
 
 msgctxt "field:account.invoice.milestone,kind:"
 msgid "Kind"
@@ -788,6 +792,10 @@ msgctxt "model:ir.action,name:act_invoice_milestone_group_type"
 msgid "Milestone Group Types"
 msgstr "Tipus de Grups de fites"
 
+msgctxt "model:ir.action,name:act_invoice_milestone_remainders"
+msgid "Milestones to Check"
+msgstr "Fites a comprovar"
+
 msgctxt "model:ir.action,name:act_invoice_milestone_type"
 msgid "Milestone Types"
 msgstr "Tipus de fita"
@@ -861,6 +869,10 @@ msgstr "Grups de fites"
 msgctxt "model:ir.ui.menu,name:menu_invoice_milestone_group_type"
 msgid "Milestone Group Types"
 msgstr "Tipus de Grups de fites"
+
+msgctxt "model:ir.ui.menu,name:menu_invoice_milestone_remainders"
+msgid "Milestones to Check"
+msgstr "Fites a comprovar"
 
 msgctxt "model:ir.ui.menu,name:menu_milestone"
 msgid "Milestones"
