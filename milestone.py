@@ -997,9 +997,9 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
     days = fields.Integer('Number of Days', required=True,
         states=_STATES_INV_DATE_CALC, depends=_DEPENDS_INV_DATE_CALC)
     invoice_date = fields.Date('Invoice Date', states={
-            'readonly': ((~Eval('state', '').in_(['draft', 'confirmed'])) |
-                ~((Eval('invoice_method') == 'remainder') &
-                    (Bool(Eval('is_sale_done'))))),
+            # 'readonly': ((~Eval('state', '').in_(['draft', 'confirmed'])) |
+            #    ~((Eval('invoice_method') == 'remainder') &
+            #        (Bool(Eval('is_sale_done'))))),
             'required': Eval('state', '').in_(['processing', 'succeeded']),
             }, depends=['state'])
     planned_invoice_date = fields.Date('Planned Invoice Date')
