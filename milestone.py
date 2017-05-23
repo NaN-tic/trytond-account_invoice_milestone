@@ -664,8 +664,11 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         for milestone in self.milestones:
             if milestone.trigger_lines:
                 if (milestone.state != 'confirmed'
-                    or milestone.kind == 'manual'
-                    or milestone.invoice):
+                        or milestone.kind == 'manual'
+                        or milestone.invoice):
+                    continue
+                if (not milestone.is_sale_done
+                        and milestone.invoice_method == 'remainder'):
                     continue
                 if milestone.trigger == 'confirmed_sale':
                     # Milestones on order confirmed
