@@ -667,7 +667,7 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
                         or milestone.kind == 'manual'
                         or milestone.invoice):
                     continue
-                if (not milestone.is_sale_done
+                if (not milestone._check_sale()
                         and milestone.invoice_method == 'remainder'):
                     continue
                 if milestone.trigger == 'confirmed_sale':
@@ -712,6 +712,12 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
 
         if todo:
             Milestone.do_invoice(todo)
+
+    def _check_sale(self):
+        for sale in self.sales:
+            if sale.state != 'processing' and sale.shipment_state != 'sent':
+                return False
+        return True
 
     @classmethod
     @ModelView.button
