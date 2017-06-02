@@ -713,12 +713,6 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
         if todo:
             Milestone.do_invoice(todo)
 
-    def _check_sale(self):
-        for sale in self.sales:
-            if sale.state != 'processing' and sale.shipment_state != 'sent':
-                return False
-        return True
-
     @classmethod
     @ModelView.button
     def close(cls, groups):
@@ -1100,6 +1094,12 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
 
         for sale in self.sales_to_invoice:
             if sale.state != 'done':
+                return False
+        return True
+
+    def _check_sale(self):
+        for sale in self.sales:
+            if sale.state != 'processing' and sale.shipment_state != 'sent':
                 return False
         return True
 
