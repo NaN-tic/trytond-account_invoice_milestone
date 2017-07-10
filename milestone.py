@@ -574,6 +574,8 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
 
                 if milestone.invoice and milestone.invoice.state != 'cancel':
                     for inv_line in milestone.invoice.lines:
+                        if inv_line.type != 'line':
+                            continue
                         if (not (isinstance(inv_line.origin, Milestone)
                                     and inv_line.origin == milestone)
                                 and not (isinstance(inv_line.origin, SaleLine)
@@ -1098,7 +1100,7 @@ class AccountInvoiceMilestone(Workflow, ModelSQL, ModelView):
         return True
 
     def _check_sale(self):
-        for sale in self.sales:
+        for sale in self.sales_to_invoice:
             if sale.state != 'processing' and sale.shipment_state != 'sent':
                 return False
         return True
