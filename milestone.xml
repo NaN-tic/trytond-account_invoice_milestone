@@ -59,6 +59,15 @@
             <field name="act_window" ref="act_invoice_milestone_group"/>
         </record>
 
+        <record model="ir.rule.group" id="rule_group_invoice_milestone_group">
+            <field name="model" search="[('model', '=', 'account.invoice.milestone.group')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_invoice_milestone_group1">
+            <field name="domain">[('company', '=', user.company.id if user.company else None)]</field>
+            <field name="rule_group" ref="rule_group_invoice_milestone_group"/>
+        </record>
+
         <record model="ir.model.button"
                 id="milestone_group_check_triggers_button">
             <field name="name">check_triggers</field>
@@ -214,7 +223,7 @@
             <field name="model"
                 search="[('model', '=', 'account.invoice.milestone')]"/>
         </record>
-        
+
         <!-- Check remainders -->
         <record model="ir.action.act_window" id="act_invoice_milestone_remainders">
             <field name="name">Milestones to Check</field>
@@ -267,6 +276,15 @@
                 id="milestone_cancel_button_group_milestone">
             <field name="button" ref="milestone_cancel_button"/>
             <field name="group" ref="group_invoice_milestone"/>
+        </record>
+
+        <record model="ir.rule.group" id="rule_group_invoice_milestone">
+            <field name="model" search="[('model', '=', 'account.invoice.milestone')]"/>
+            <field name="global_p" eval="True"/>
+        </record>
+        <record model="ir.rule" id="rule_invoice_milestone1">
+            <field name="domain">[('company', '=', user.company.id if user.company else None)]</field>
+            <field name="rule_group" ref="rule_group_invoice_milestone"/>
         </record>
 
         <record model="ir.model.access" id="access_invoice_milestone_milestone">

@@ -354,7 +354,12 @@ class AccountInvoiceMilestoneGroup(ModelSQL, ModelView):
 
     code = fields.Char('Code', required=True, readonly=True)
     company = fields.Many2One('company.company', 'Company', required=True,
-        select=True, ondelete='CASCADE', states={
+        select=True, ondelete='CASCADE',
+        domain=[
+            ('id', If(Eval('context', {}).contains('company'), '=', '!='),
+                Eval('context', {}).get('company', -1)),
+            ],
+        states={
             'readonly': Bool(Eval('milestones', [])),
             }, depends=['milestones'])
     currency = fields.Many2One('currency.currency', 'Currency', required=True,
