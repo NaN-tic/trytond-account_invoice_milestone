@@ -1,4 +1,4 @@
-# 
+#
 msgid ""
 msgstr "Content-Type: text/plain; charset=utf-8\n"
 
@@ -900,7 +900,7 @@ msgstr "Sistema"
 
 msgctxt "selection:account.invoice.milestone,month:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone,month:"
 msgid "April"
@@ -976,7 +976,7 @@ msgstr "Amb èxit"
 
 msgctxt "selection:account.invoice.milestone,trigger:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone,trigger:"
 msgid "On % sent"
@@ -992,7 +992,7 @@ msgstr "Al enviar completament la venda"
 
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone,weekday:"
 msgid "Friday"
@@ -1072,7 +1072,7 @@ msgstr "Sistema"
 
 msgctxt "selection:account.invoice.milestone.type,month:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone.type,month:"
 msgid "April"
@@ -1124,7 +1124,7 @@ msgstr "Setembre"
 
 msgctxt "selection:account.invoice.milestone.type,trigger:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone.type,trigger:"
 msgid "On % sent"
@@ -1140,7 +1140,7 @@ msgstr "Al enviar completament la venda"
 
 msgctxt "selection:account.invoice.milestone.type,weekday:"
 msgid ""
-msgstr " "
+msgstr ""
 
 msgctxt "selection:account.invoice.milestone.type,weekday:"
 msgid "Friday"
